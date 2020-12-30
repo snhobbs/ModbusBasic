@@ -1,0 +1,4 @@
+.settings/
+cmake_install.cmake
+Makefile
+build

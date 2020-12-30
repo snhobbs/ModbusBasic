@@ -1,0 +1,9 @@
+[submodule "examples/libmodbus_tests/-f"]
+	path = examples/libmodbus_tests/-f
+	url = git@github.com:stephane/libmodbus.git
+[submodule "examples/libmodbus_tests/libmodbus"]
+	path = examples/libmodbus_tests/libmodbus
+	url = git@github.com:stephane/libmodbus.git
+[submodule "examples/pymodbus_tests/pymodbus"]
+	path = examples/pymodbus_tests/pymodbus
+	url = git@github.com:riptideio/pymodbus.git

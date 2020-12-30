@@ -1,0 +1,13 @@
+/build/
+.cproject
+.project
+Tests
+tests
+.cccc
+*.results
+.settings
+
+.ninja*
+
+.metadata
+
