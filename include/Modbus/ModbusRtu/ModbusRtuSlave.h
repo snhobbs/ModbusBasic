@@ -19,7 +19,6 @@
 #ifndef MODBUS_MODBUSRTUSLAVE_H_
 #define MODBUS_MODBUSRTUSLAVE_H_
 #include <Modbus/Modbus.h>
-#include <Modbus/DeviceIdentifier.h>
 #include <Modbus/ModbusRtu/ModbusRtuProtocol.h>
 #include <Utilities/TypeConversion.h>
 
@@ -96,12 +95,11 @@ class ProtocolRtuSlave {
       Function::kWriteSingleHoldingRegister,
       Function::kWriteMultipleHoldingRegisters,
       Function::kWriteMultipleCoils,
-      Function::kReadDeviceIdentification,
+      //  Function::kReadDeviceIdentification,
   };
 
   SlaveProtocolBase slave_{};
   uint8_t slave_address_;
-  DeviceIdentifierController device_identifier_controller_;
   TCoilController& coil_controller_;
   THoldingRegisterController& holding_register_controller_;
   TDiscreteInputController& discrete_input_controller_;
@@ -135,8 +133,7 @@ class ProtocolRtuSlave {
       response_code = holding_register_controller_.ReadFrame(frame, &response);
       break;
     case (AddressSpace::kDeviceIdentifier):
-      response_code =
-          device_identifier_controller_.ReadFrame(frame, &response);
+      response_code = -1;
       break;
     case (AddressSpace::kUnmapped):
       response_code = -1;
@@ -181,7 +178,7 @@ class ProtocolRtuSlave {
     case (AddressSpace::kHoldingRegister):
       return holding_register_controller_.ValidateFrame(frame);
     case (AddressSpace::kDeviceIdentifier):
-      return device_identifier_controller_.ValidateFrame(frame);
+      return Exception::kIllegalFunction;
     case (AddressSpace::kSystemStatus):
       return Exception::kIllegalFunction;
     case (AddressSpace::kUnmapped):
@@ -220,13 +217,12 @@ class ProtocolRtuSlave {
   }
 
   explicit ProtocolRtuSlave(Crc16 crc16, uint8_t slave_address,
-                            const DeviceIdentifier &device_identifier,
               TCoilController& coil_controller,
               THoldingRegisterController& holding_register_controller,
               TDiscreteInputController& discrete_input_controller,
               TInputRegisterController& input_register_controller)
       : slave_{crc16}, slave_address_{slave_address},
-        device_identifier_controller_{device_identifier}, coil_controller_{coil_controller},
+        coil_controller_{coil_controller},
     holding_register_controller_{holding_register_controller}, discrete_input_controller_{discrete_input_controller},
     input_register_controller_{input_register_controller}{}
 };

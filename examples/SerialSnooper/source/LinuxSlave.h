@@ -15,7 +15,6 @@
 #include <Modbus/Modbus.h>
 #include <Modbus/BitControl.h>
 #include <Modbus/DataStore.h>
-#include <Modbus/DefaultSlaveDeviceIdentifier.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <Modbus/RegisterControl.h>
 #include <Utilities/TypeConversion.h>
@@ -47,7 +46,6 @@ class LinuxSlave : public SlaveBase {
 
  private:
   static const constexpr uint8_t kSlaveAddress = 0x03;
-  static const constexpr SlaveDeviceIdentifier identity{};
   const char *const device_name; // = "/tmp/ttyp0";
 
   static const constexpr int kBaudRateHz = 9600;
@@ -131,7 +129,7 @@ class LinuxSlave : public SlaveBase {
     }
   }
   explicit LinuxSlave(const char *const port)
-      : SlaveBase{&crc16, kSlaveAddress, identity.GetDeviceIdentifier(),
+      : SlaveBase{&crc16, kSlaveAddress,
                   coils_, hregs_,        dins_,
                   inregs_},
         device_name{port}, iodev_{port, kBaudRate} {}

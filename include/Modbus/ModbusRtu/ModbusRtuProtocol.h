@@ -13,7 +13,6 @@
 #include <Modbus/Modbus.h>
 #include <Modbus/BitControl.h>
 #include <Modbus/RegisterControl.h>
-#include <Modbus/DeviceIdentifier.h>
 #include <Utilities/TypeConversion.h>
 #include <cstdint>
 

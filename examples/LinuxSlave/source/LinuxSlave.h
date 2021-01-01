@@ -15,7 +15,6 @@
 #include <Modbus/Modbus.h>
 #include <Modbus/BitControl.h>
 #include <Modbus/DataStore.h>
-#include <Modbus/DefaultSlaveDeviceIdentifier.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <Modbus/RegisterControl.h>
 #include <Utilities/TypeConversion.h>
@@ -43,7 +42,6 @@ class LinuxSlave : public SlaveBase {
   HoldingRegisterController hregs_;
   DiscreteInputController dins_;
   InputRegisterController inregs_;
-  SlaveDeviceIdentifier device_identifier_;
 
   static const constexpr uint8_t kSlaveAddress = 0x03;
 
@@ -64,38 +62,11 @@ class LinuxSlave : public SlaveBase {
     return tv;
   }
 
-  void PrintPacketData(const Modbus::Frame& frame) {
-    printf("Slave Address %d: %s ", frame.address, GetFunctionName(frame.function).c_str());
-    switch (frame.function) {
-    case Modbus::Function::kReadMultipleHoldingRegisters: {
-      const uint16_t address = Modbus::DataCommand::ReadAddressStart(frame.data_array);
-      const uint16_t register_count = Modbus::ReadMultipleHoldingRegistersCommand::ReadRegisterCount(frame.data_array);
-      printf("Address: 0x%x, Count: %d", address, register_count);
-      break;
-    }
-    case Modbus::Function::kWriteMultipleHoldingRegisters: {
-      const uint16_t address = Modbus::DataCommand::ReadAddressStart(frame.data_array);
-      const uint16_t register_count = Modbus::WriteMultipleHoldingRegistersCommand::ReadRegisterCount(frame.data_array);
-      printf("Address: 0x%x, Count: %d", address, register_count);
-      break;
-    }
-    default:
-      break;
-    }
-
-    printf(" [");
-    for (std::size_t i = 0; i < frame.data_length; i++) {
-      printf("0x%x ", frame.data_array[i]);
-    }
-    printf("]");
- 
-  }
-
   void ProcessPacket(void) {
     ProcessMessage();
 
     const auto& frame = GetFrameIn();
-      PrintPacketData(frame);
+    Modbus::PrintPacketData(frame);
       printf("\n");
 #if 0
     if (frame.address == 246 || frame.function == Modbus::Function::kWriteMultipleHoldingRegisters) {
@@ -150,7 +121,7 @@ class LinuxSlave : public SlaveBase {
   }
 
   explicit LinuxSlave(const char *const port)
-      : SlaveBase{&crc16, kSlaveAddress, device_identifier_.GetDeviceIdentifier(), coils_,
+      : SlaveBase{&crc16, kSlaveAddress, coils_,
                   hregs_, dins_, inregs_},
         device_name{port}, iodev_{port, kBaudRate} {}
 };
