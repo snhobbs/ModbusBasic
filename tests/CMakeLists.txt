@@ -83,6 +83,8 @@ find_package(gtest QUIET)
 target_link_libraries(tests gtest)
 target_link_libraries(tests pthread)
 
+include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
+include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
 target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 

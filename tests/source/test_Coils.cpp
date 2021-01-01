@@ -13,7 +13,9 @@
 #include "Crc.h"
 #include <ArrayView/ArrayView.h>
 #include <Modbus/Modbus.h>
-#include <Modbus/ModbusRtu/ModbusRtu.h>
+#include <Modbus/BitControl.h>
+#include <Modbus/DataStore.h>
+#include <Modbus/DataTypeController.h>
 #include <Utilities/TypeConversion.h>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -185,7 +187,7 @@ struct ValidateFramesFixture : public CoilControllerFixture {
   std::array<uint8_t, 64> buffer;
   ArrayView<uint8_t> frame_data{buffer.size(), buffer.data()};
   const uint16_t kAddressStart = 0x00;
-  Modbus::RtuFrame frame{frame_data};
+  Modbus::Frame frame{frame_data};
   ValidateFramesFixture() {
     // frame_data[Modbus::CoilCommand::kDataAddressStart] =
     // Utilities::GetByte(kAddressStart, 0);

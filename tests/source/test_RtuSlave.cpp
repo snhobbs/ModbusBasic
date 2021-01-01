@@ -11,9 +11,9 @@
 
 #include "Crc.h"
 #include <ArrayView/ArrayView.h>
-#include <Modbus/DefaultSlaveDeviceIdentifier.h>
 #include <Modbus/Modbus.h>
-#include <Modbus/ModbusRtu/ModbusRtu.h>
+#include <Modbus/DataStore.h>
+#include <Modbus/RegisterControl.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <gtest/gtest.h>
 #include <array>
@@ -25,7 +25,6 @@
 namespace ModbusTests {
 
 struct RtuSlaveFixture : public ::testing::Test {
-  static const constexpr SlaveDeviceIdentifier identity{};
   static const constexpr std::size_t kFrameOverhead =
       Modbus::Command::kHeaderLength + Modbus::Command::kFooterLength;
   static const constexpr uint8_t kSlaveAddress = 0xad;
@@ -43,7 +42,6 @@ struct RtuSlaveFixture : public ::testing::Test {
 
   Modbus::ProtocolRtuSlave<CoilController, HoldingController, DiscreteController, InputController> slave{&crc16,
             kSlaveAddress,
-            identity.GetDeviceIdentifier(),
             coil_controller,
             holding_register_controller,
             discrete_input_controller,
@@ -51,13 +49,13 @@ struct RtuSlaveFixture : public ::testing::Test {
   static const constexpr std::size_t kDataLength = 9;
   std::array<uint8_t, kDataLength> data{1, 2, 3, 4, 5, 6, 7, 8, 0};
 
-  void CheckFrame(Modbus::RtuFrame &packet) {
+  void CheckFrame(Modbus::Frame &packet) {
     std::array<uint8_t, 256> input_data{};
     std::array<uint8_t, 256> output_data{};
     ArrayView<uint8_t> output_frame{GetRequiredPacketSize(packet),
                                     output_data.data()};
 
-    Modbus::RtuFrame packet_read{
+    Modbus::Frame packet_read{
         0, Modbus::Function::kNone, input_data.size(),
         ArrayView<uint8_t>{input_data.size(), input_data.data()}};
     Modbus::ProtocolRtu rtu{crc16};
@@ -79,14 +77,14 @@ struct RtuSlaveFixture : public ::testing::Test {
 
 TEST_F(RtuSlaveFixture, SlaveRunCommand) {
   std::array<uint8_t, 64> frame_data;
-  Modbus::RtuFrame packet{kSlaveAddress, Modbus::valid_functions[0],
+  Modbus::Frame packet{kSlaveAddress, Modbus::valid_functions[0],
                           data.size(),
                           ArrayView<uint8_t>{data.size(), data.data()}};
   ArrayView<uint8_t> frame{data.size() + kFrameOverhead, frame_data.data()};
   Modbus::ProtocolRtu rtu{crc16};
   rtu.Frame(packet, &frame);
   std::array<uint8_t, 128> data_in{};
-  Modbus::RtuFrame packet_read{
+  Modbus::Frame packet_read{
       0x0, Modbus::valid_functions.back(), data_in.size(),
       ArrayView<uint8_t>{data_in.size(), data_in.data()}};
 
@@ -103,7 +101,7 @@ TEST_F(RtuSlaveFixture, SlaveRunCommand) {
 #if 0
 TEST_F(RtuSlaveFixture, SlaveAddressMatch) {
   for (std::size_t i = 0; i < 0xff; i++) {
-    Modbus::RtuFrame packet{static_cast<uint8_t>(i), Modbus::valid_functions[0],
+    Modbus::Frame packet{static_cast<uint8_t>(i), Modbus::valid_functions[0],
                             data.size(),
                             ArrayView<uint8_t>{data.size(), data.data()}};
     if (i == kSlaveAddress) {
@@ -123,7 +121,7 @@ TEST_F(RtuSlaveFixture, WriteSingleCoil) {
   std::array<uint8_t, kDataLength> frame_data{};
 
   for (uint16_t coil = 0; coil < coil_count; coil++) {
-    Modbus::RtuFrame packet{
+    Modbus::Frame packet{
         kSlaveAddress, Modbus::Function::kNone, frame_data.size(),
         ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
     packet.function = Modbus::Function::kWriteSingleCoil;
@@ -137,7 +135,7 @@ TEST_F(RtuSlaveFixture, WriteMultipleCoils) {
   std::array<uint8_t, kDataLength> frame_data{};
 
   for (uint16_t coil = 0; coil < coil_count; coil++) {
-    Modbus::RtuFrame packet{
+    Modbus::Frame packet{
         kSlaveAddress, Modbus::Function::kNone, frame_data.size(),
         ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
     packet.function = Modbus::Function::kWriteMultipleCoils;
@@ -153,7 +151,7 @@ TEST_F(RtuSlaveFixture, ReadCoils) {
   std::array<uint8_t, kDataLength> frame_data{};
 
   for (uint16_t coil = 0; coil < coil_count; coil++) {
-    Modbus::RtuFrame packet{
+    Modbus::Frame packet{
         kSlaveAddress, Modbus::Function::kNone, frame_data.size(),
         ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
     packet.function = Modbus::Function::kReadCoils;
@@ -166,7 +164,7 @@ TEST_F(RtuSlaveFixture, WriteSingleHoldingRegisterCommand) {
   std::array<uint8_t, kDataLength> frame_data{};
 
   for (uint16_t reg = 0; reg < holding_register_count; reg++) {
-    Modbus::RtuFrame packet{
+    Modbus::Frame packet{
         kSlaveAddress, Modbus::Function::kNone, data.size(),
         ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
     packet.function = Modbus::Function::kWriteSingleHoldingRegister;
@@ -184,7 +182,7 @@ TEST_F(RtuSlaveFixture, WriteMultipleHoldingRegistersCommand) {
   for (uint16_t reg = 0; reg < holding_register_count - kRegisterCount; reg++) {
     const std::array<uint16_t, kRegisterCount> buff{0xffff};
     ArrayView<const uint16_t> register_data{buff.size(), buff.data()};
-    Modbus::RtuFrame packet{
+    Modbus::Frame packet{
         kSlaveAddress, Modbus::Function::kNone, frame_data.size(),
         ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
     packet.function = Modbus::Function::kWriteMultipleHoldingRegisters;
@@ -201,7 +199,7 @@ TEST_F(RtuSlaveFixture, ReadMultipleHoldingRegistersCommand) {
 
   for (uint16_t reg = 0;
        reg < holding_register_count - kNumberOfRegisters; reg++) {
-    Modbus::RtuFrame packet{
+    Modbus::Frame packet{
         kSlaveAddress, Modbus::Function::kNone, data.size(),
         ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
     packet.function = Modbus::Function::kReadMultipleHoldingRegisters;

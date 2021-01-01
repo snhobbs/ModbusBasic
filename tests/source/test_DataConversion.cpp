@@ -12,9 +12,8 @@
 #include "ConnectedSystem.h"
 #include "Crc.h"
 #include <Modbus/Modbus.h>
-#include <Modbus/ModbusRtu/ModbusRtu.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
-#include <Modbus/ModbusRtu/ModbusRtuMaster.h>
+//#include <Modbus/ModbusRtu/ModbusRtuMaster.h>
 #include <ArrayView/ArrayView.h>
 #include <Utilities/TypeConversion.h>
 #include <gtest/gtest.h>

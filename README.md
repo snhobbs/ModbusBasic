@@ -24,7 +24,8 @@ with views of the identifiers.
 connection. A bidirectional pipe is setup allowing two processes
 to see the pipe as if it was an attached serial device.
 
-**Use** : socat -d -d -d -x PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
+**Use** : 
+socat -d -d -d -x PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=b9600 PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=b9600
 
 In this example the pipes are setup at /tmp/ptyp0 and /tmp/ttyp0 running at 9600 baud with some debug info (level set by the number of '-d').
 The master is started on one pipe and the slave on another and can be treated as connected hardware.

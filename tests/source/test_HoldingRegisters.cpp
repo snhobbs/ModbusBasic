@@ -11,7 +11,9 @@
 
 #include "Crc.h"
 #include <Modbus/Modbus.h>
-#include <Modbus/ModbusRtu/ModbusRtu.h>
+#include <Modbus/RegisterControl.h>
+#include <Modbus/DataStore.h>
+//#include <Modbus/ModbusRtu/ModbusRtu.h>
 #include <ArrayView/ArrayView.h>
 #include <gtest/gtest.h>
 #include <array>
@@ -77,7 +79,7 @@ struct ValidateHoldingRegisterFramesFixture: public ::testing::Test {
 
   const uint8_t kSlaveAddress = 0x11;
   const uint16_t kAddressStart = 0x0a;
-  Modbus::RtuFrame frame{kSlaveAddress, Modbus::Function::kNone, frame_data.size(), frame_data};
+  Modbus::Frame frame{kSlaveAddress, Modbus::Function::kNone, frame_data.size(), frame_data};
   void SetUp(void) {}
   void TearDown(void) {}
   ValidateHoldingRegisterFramesFixture(void) {}
