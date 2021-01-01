@@ -10,66 +10,19 @@
  */
 
 #pragma once
-#include <IODevice/IODevice.h>
-#include <Modbus/BitControl.h>
-#include <Modbus/DefaultSlaveDeviceIdentifier.h>
+#include "LinuxModbusTools.h"
+#include <Modbus/../../examples/posix/PosixSerial.h>
 #include <Modbus/Modbus.h>
-#include <Modbus/ModbusRtu/ModbusRtuProtocol.h>
+#include <Modbus/BitControl.h>
+#include <Modbus/DataStore.h>
+#include <Modbus/DefaultSlaveDeviceIdentifier.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <Modbus/RegisterControl.h>
-#include <Modbus/DataStore.h>
-#include <RingBuffer/RingBuffer.h>
 #include <Utilities/TypeConversion.h>
-#include <Utilities/Crc.h>
 #include <cassert>
 #include <cstdint>
-#include <cstdio> // standard input / output functions
-#include <cstdlib>
-#include <cstring> // string function definitions
-#include <fcntl.h> // File control definitions
-#include <iostream>
 #include <sys/time.h>
-#include <unistd.h>  // UNIX standard function definitions
-#include "PosixSerial.h" // examples/posix/PosixSerial.h
-
 #include <vector>
-#include <string>
-inline std::string GetFunctionName(const Modbus::Function function) {
-  switch (function) {
-  case Modbus::Function::kReadCoils:
-    return "Read Coils";
-  case Modbus::Function::kReadDiscreteInputs:
-    return "Read Discrete Inputs";
-  case Modbus::Function::kReadMultipleHoldingRegisters:
-    return "Read Multiple Holding Registers";
-  case Modbus::Function::kReadInputRegisters:
-    return "Read Input Registers";
-  case Modbus::Function::kWriteSingleCoil:
-    return "Read Single Coil";
-  case Modbus::Function::kWriteSingleHoldingRegister:
-    return "Write Single Holding Register";
-  case Modbus::Function::kWriteMultipleHoldingRegisters:
-    return "Write Multiple Holding Registers";
-  case Modbus::Function::kWriteMultipleCoils:
-    return "Write Multiple Coils";
-  case Modbus::Function::kReadDeviceIdentification:
-    return "Read Device Information";
-  }
-  char buff[256]{};
-  snprintf(buff, sizeof(buff), "Unknown Command %d", static_cast<int>(function));
-  return buff;
-}
-
-
-int64_t GetMicroSecondsSince(const timeval &first, const timeval &second) {
-  return (second.tv_sec - first.tv_sec) * 1000000 +
-         (second.tv_usec - first.tv_usec);
-}
-
-inline uint16_t crc16(const ArrayView<uint8_t> &array, std::size_t length) {
-  assert(length <= array.size());
-  return Utilities::crc16(array.data(), length);
-}
 
 inline const constexpr std::size_t kCoilCount = 125;
 inline const constexpr std::size_t kRegisterCount = 100;
@@ -112,12 +65,6 @@ class LinuxSlave : public SlaveBase {
     iodev_.ReadIntoRxBuff();
   }
 
-  timeval GetTimeStamp(void) {
-    timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv;
-  }
-
 #if 0
   void ProcessMessage(void) {
     Modbus::Exception exception = ValidateMessage(framein_);
@@ -131,31 +78,6 @@ class LinuxSlave : public SlaveBase {
   }
 #endif
 
-  void PrintPacketData(void) {
-    const auto& frame = GetFrameIn();
-    printf("\nSlave Address %d: %s ", frame.address, GetFunctionName(frame.function).c_str());
-    switch (frame.function) {
-    case Modbus::Function::kReadMultipleHoldingRegisters: {
-      const uint16_t address = Modbus::DataCommand::ReadAddressStart(frame.data_array);
-      const uint16_t register_count = Modbus::ReadMultipleHoldingRegistersCommand::ReadRegisterCount(frame.data_array);
-      printf("Address: 0x%x, Count: %d", address, register_count);
-      break;
-    }
-    case Modbus::Function::kWriteMultipleHoldingRegisters: {
-      const uint16_t address = Modbus::DataCommand::ReadAddressStart(frame.data_array);
-      const uint16_t register_count = Modbus::WriteMultipleHoldingRegistersCommand::ReadRegisterCount(frame.data_array);
-      printf("Address: 0x%x, Count: %d", address, register_count);
-      break;
-    }
-    }
-
-    printf(" [");
-    for (std::size_t i = 0; i < frame.data_length; i++) {
-      printf("0x%x ", frame.data_array[i]);
-    }
-    printf("]\n");
- 
-  }
   void ProcessPacket(void) {
     ProcessMessage();
     Reset();
@@ -186,7 +108,7 @@ class LinuxSlave : public SlaveBase {
         //PrintPacketData();
         const auto& frame = GetFrameIn();
         if (slave_.FrameCrcIsValid(frame)) {
-          PrintPacketData();
+          Modbus::PrintPacketData(frame);
           ProcessPacket();
         } else {
           // printf("Crc invalid\n");
