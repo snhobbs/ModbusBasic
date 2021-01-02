@@ -1,16 +1,46 @@
 # Modbus
-C++ Modbus library.
+C++ Modbus parsing library.
 
-# Setting Up a Device
+# Setting Up a Slave Device
+The focus of this library is to allow for a serializable data types to be exposed over
+modbus in a clearer manner. Modbus registers are unsigned 16 bit values. Other data types
+need to be translated to these 16 bit values and back. The idea of this library is to use
+a user defined data store type that controls access to the underlying data types this is especially
+useful for preventing unaligned data accesses.
 
-1. Device Identifier: define a DeviceIdentifier struct
-with views of the identifiers.
-2. Subclass of ProtocolRtuSlave.
+A slave device is composed of controlled and data stores using C++ templates.
+Each slave needs a CoilController, HoldingRegisterController, DiscreteInputController, and an InputRegisterController.
+Each of these controls access to a data store.
+A simple data store for registers would just be an array of uint16_ts. For a coil or discrete input it would be a bit field.
+These basic data stores are available but are less powerful than creating a data store for the data types being used.
+The basic controller types are:
+
+  using CoilController =
+      Modbus::CoilController<Modbus::BitFieldDataStore<kCoilCount>>;
+  using HoldingRegisterController =
+    Modbus::HoldingRegisterController<Modbus::RegisterDataStore<kHoldingRegisterCount>>;
+  using DiscreteInputController =
+      Modbus::DiscreteInputController<Modbus::BitFieldDataStore<kDiscreteInputCount>>;
+  using InputRegisterController =
+      Modbus::InputRegisterController<Modbus::RegisterDataStore<kInputRegisterCount>>;
+
+## Specialized Data Stores
+Using mapped data stores allows the user to expose the actual data types being used with
+the serialization encapsulated.
+
+using HoldingRegisterController =
+    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegisters::DataMap>>;
+using InputRegisterController =
+    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::DataMap>>;
+
+
+
+1. Subclass of ProtocolRtuSlave.
   - Timeouts
   - When to process packets
   - IO device control, this layer puts the recieved characters 
     into the protocol and transmitting the generated responses
-3. Data Stores
+2. Data Stores
   - The holding registers, coils, discrete inputs, and input registers are 
   generalized as data stores. The default store mechanism can be used where 
   the data store is literal, i.e. all bits and registers are stored
