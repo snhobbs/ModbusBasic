@@ -6,4 +6,4 @@
 
 # Compute paths
 get_filename_component(MODBUS_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set(MODBUS_INCLUDE_DIRS "/home/simon/software/Modbus;/home/simon/software/Modbus")
+set(MODBUS_INCLUDE_DIRS ${MODBUS_CMAKE_DIR}/include)
