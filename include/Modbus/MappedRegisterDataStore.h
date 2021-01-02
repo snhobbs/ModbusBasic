@@ -8,40 +8,93 @@
  *  each entry must be aligned to 16 bits
  * */
 #pragma once
-#include <cstdint>
-#include <cstddef>
-#include <Modbus/Modbus.h>
-#include <Modbus/DataStore.h>
 #include <Modbus/DataCommand.h>
+#include <Modbus/DataStore.h>
+#include <Modbus/Modbus.h>
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 namespace Modbus {
-template<typename T>
-struct MemoryMapEntry {
+struct BasicMemoryMapEntry {
+  std::size_t offset;
+  std::size_t size;
+};
+
+template <typename T> struct MemoryMapEntry {
   T identifier;
   std::size_t offset;
   std::size_t size;
 };
 
-template<typename MapObject>
-class MappedRegisterDataStore : public DataStore {
-  MapObject map_object_;
+template <typename T> struct IdentifierMemoryMapEntry {
+  T identifier;
+  std::size_t offset;
+  std::size_t size;
+};
 
- public:
-  MapObject& GetMapObject(void) {
-    return map_object_;
+template <typename T> class MappedRegisterDataStore : public DataStore {
+  bool new_data_ = false;
+  T *memory_controller_;
+
+private:
+  std::size_t GetMemoryMapEntryIndex(std::size_t address) const {
+    for (std::size_t i = 0; i < memory_controller_->memory_entries_.size();
+         i++) {
+      if (address * sizeof(uint16_t) <=
+          memory_controller_->memory_entries_[i].offset) {
+        return i;
+      }
+    }
+    return 0;
   }
 
-  static constexpr bool WriteLocationValid(std::size_t address, std::size_t count) {
-    return MapObject::WriteLocationValid(address - GetAddressStart(), count);
+public:
+  explicit MappedRegisterDataStore(T *memory_controller)
+      : memory_controller_{memory_controller} {}
+  bool IsNewData(void) const { return new_data_; }
+  void SetNewData(bool value) { new_data_ = value; }
+  void SetField(const std::size_t identifier,
+                const ArrayView<const uint8_t> &data_view) {
+    SetNewData(true);
+    memory_controller_->SetField(identifier, data_view);
   }
 
-  static constexpr bool ReadLocationValid(std::size_t address, std::size_t count) {
-    return MapObject::ReadLocationValid(address - GetAddressStart(), count);
+  void GetField(const std::size_t identifier,
+                ArrayView<uint8_t> *data_view) const {
+    return memory_controller_->GetField(identifier, data_view);
   }
 
-  static std::size_t size(void) {return GetSize();}
-  static constexpr std::size_t GetSize(void) { return MapObject::size(); }
-  static constexpr std::size_t GetRegisterByteSize(void) { return sizeof(uint16_t); }
+public:
+  static constexpr std::size_t size(void) { return T::size(); }
+  static constexpr std::size_t GetSize(void) { return size(); }
+  static constexpr std::size_t GetRegisterByteSize(void) {
+    return sizeof(uint16_t);
+  }
+  std::size_t GetIdentifierFromAddress(std::size_t address) const {
+    return GetMemoryMapEntryIndex(address);
+  }
+
+  bool ReadLocationValid(std::size_t address, std::size_t count) const {
+    return WriteLocationValid(address, count);
+  }
+
+  bool WriteLocationValid(std::size_t address, std::size_t count) const {
+    const auto &entry = memory_controller_->memory_entries_.at(
+        GetMemoryMapEntryIndex(address - GetAddressStart()));
+    return (address * sizeof(uint16_t) == entry.offset) &&
+           (entry.size == count * sizeof(uint16_t));
+  }
+
+  template <typename F>
+  void SetFieldFromAddress(std::size_t address, const F &data_view) {
+    const auto identifier = GetIdentifierFromAddress(address);
+    SetField(identifier, data_view);
+  }
+  void GetFieldFromAddress(std::size_t address,
+                           ArrayView<uint8_t> *data_view) const {
+    const auto identifier = GetIdentifierFromAddress(address);
+    GetField(identifier, data_view);
+  }
 
   uint16_t GetRegister(std::size_t address) const {
     std::array<uint8_t, sizeof(uint16_t)> data{};
@@ -51,27 +104,25 @@ class MappedRegisterDataStore : public DataStore {
     return value;
   }
 
-  void GetRegisters(std::size_t address, std::size_t register_count, ArrayView<uint8_t>* data_view) const {
+  void GetRegisters(std::size_t address, std::size_t register_count,
+                    ArrayView<uint8_t> *data_view) const {
     assert(ReadLocationValid(address, register_count));
-    map_object_.GetFieldFromAddress(address, data_view);
+    GetFieldFromAddress(address, data_view);
   }
 
   void SetRegister(std::size_t address, uint16_t value) {
-    std::array<uint8_t, sizeof(uint16_t)> data {
-      Utilities::GetByte(value, 1),
-      Utilities::GetByte(value, 0)
-    };
+    std::array<uint8_t, sizeof(uint16_t)> data{Utilities::GetByte(value, 1),
+                                               Utilities::GetByte(value, 0)};
     const ArrayView<const uint8_t> uint16_data_view{data.size(), data.data()};
     SetRegisters(address, 1, uint16_data_view);
   }
 
   //  Validation has made each one of the a complete entry to one of our values
-  void SetRegisters(std::size_t address, std::size_t register_count, const ArrayView<const uint8_t>& data_view) {
+  void SetRegisters(std::size_t address, std::size_t register_count,
+                    const ArrayView<const uint8_t> &data_view) {
     assert(WriteLocationValid(address, register_count));
-    map_object_.SetFieldFromAddress(address, data_view);
+    SetFieldFromAddress(address, data_view);
   }
+};  //  class MappedRegisterDataStore
 
-  constexpr MappedRegisterDataStore() {}
-};
-
-}  //  namespace Modbus
+} //  namespace Modbus

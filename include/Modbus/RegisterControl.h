@@ -253,7 +253,7 @@ class WriteMultipleHoldingRegistersCommand : public RegisterCommand {
 
 template <typename T>
 class HoldingRegisterController {
-  T register_data_;
+  T* register_data_;
 
   Exception ValidateWriteSingleHoldingRegister(
       const ArrayView<uint8_t> &data_array) const {
@@ -292,21 +292,21 @@ class HoldingRegisterController {
   }
 
  public:
-
+  explicit HoldingRegisterController(T* register_data) : register_data_{register_data} {}
   T* GetDataStore(void) {
     return &register_data_;
   }
   bool WriteLocationValid(std::size_t address, std::size_t count) const {
-    return register_data_.WriteLocationValid(address, count);
+    return register_data_->WriteLocationValid(address, count);
   }
   bool ReadLocationValid(std::size_t address, std::size_t count) const {
-    return register_data_.ReadLocationValid(address, count);
+    return register_data_->ReadLocationValid(address, count);
   }
   uint16_t ReadRegister(uint16_t address) const {
-    return register_data_.GetRegister(address);
+    return register_data_->GetRegister(address);
   }
   void WriteRegister(uint16_t address, uint16_t value) {
-    register_data_.SetRegister(address, value);
+    register_data_->SetRegister(address, value);
   }
   int32_t ReadFrame(const Frame &frame, Response *response) {
       if (frame.function == Function::kWriteSingleHoldingRegister) {
@@ -361,7 +361,7 @@ class HoldingRegisterController {
 
     const ArrayView<const uint8_t> data_view{register_count*sizeof(uint16_t), 
       &frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::kValueStart]};
-    register_data_.SetRegisters(address, register_count, data_view);
+    register_data_->SetRegisters(address, register_count, data_view);
     return 0;
   }
 
@@ -372,7 +372,7 @@ class HoldingRegisterController {
       assert(0);
       return;
     }
-    register_data_.GetRegisters(starting_address, register_count, response_data);
+    register_data_->GetRegisters(starting_address, register_count, response_data);
   }
 
   Exception ValidateFrame(const Frame &frame) const {
@@ -394,7 +394,7 @@ class HoldingRegisterController {
 
 template <typename T>
 class InputRegisterController {
-  T register_data_;
+  T* register_data_;
 
   Exception ValidateReadRegisters(
       const ArrayView<uint8_t> &data_array) const {
@@ -409,17 +409,18 @@ class InputRegisterController {
   }
 
  public:
+  explicit InputRegisterController(T* register_data) : register_data_{register_data} {}
   T* GetDataStore(void) {
     return & register_data_;
   }
   bool ReadLocationValid(std::size_t address, std::size_t count) const {
-    return register_data_.ReadLocationValid(address, count);
+    return register_data_->ReadLocationValid(address, count);
   }
   uint16_t ReadRegister(uint16_t address) const {
-    return register_data_.GetRegister(address);
+    return register_data_->GetRegister(address);
   }
   void WriteRegister(uint16_t address, uint16_t value) {
-    register_data_.SetRegister(address, value);
+    register_data_->SetRegister(address, value);
   }
   int32_t ReadFrame(const Frame &frame, Response *response) {
     if (frame.function != Function::kReadInputRegisters) {
@@ -457,7 +458,7 @@ class InputRegisterController {
       assert(0);
       return;
     }
-    register_data_.GetRegisters(starting_address, register_count, response_data);
+    register_data_->GetRegisters(starting_address, register_count, response_data);
   }
 
   Exception ValidateFrame(const Frame &frame) const {

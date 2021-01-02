@@ -32,19 +32,26 @@ using DiscreteInputController =
     Modbus::DiscreteInputController<Modbus::BitFieldDataStore<kCoilCount>>;
 
 using HoldingRegisterController =
-    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegisters::DataMap>>;
+    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController>>;
 using InputRegisterController =
-    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::DataMap>>;
+    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController>>;
 using SlaveBase =
     Modbus::ProtocolRtuSlave<CoilController, HoldingRegisterController,
                              DiscreteInputController, InputRegisterController>;
 
 class LinuxSlave : public SlaveBase {
-  public:
+ public:
+  InputRegisters::MemoryMap input_map_;
+  InputRegisters::MemoryMapController input_map_controller_{&input_map_};
+  Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController> input_register_data_store_{&input_map_controller_};
+  HoldingRegisters::MemoryMap holding_map_;
+  HoldingRegisters::MemoryMapController holding_map_controller_{&holding_map_};
+  Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController> holding_register_data_store_{&holding_map_controller_};
+
   CoilController coils_;
-  HoldingRegisterController hregs_;
+  HoldingRegisterController hregs_{&holding_register_data_store_};
   DiscreteInputController dins_;
-  InputRegisterController inregs_;
+  InputRegisterController inregs_{&input_register_data_store_};
 
   static const constexpr uint8_t kSlaveAddress = 0x03;
 
