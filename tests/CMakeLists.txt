@@ -80,8 +80,8 @@ target_sources(tests PUBLIC ${sources})
 target_sources(tests PUBLIC ${TestSource}/main.cpp)
 
 
-find_package(GTest REQUIRED)
-message("GTEST: ${GTest_DIR}")
+#find_package(GTest REQUIRED)
+#message("GTEST: ${GTest_DIR}")
 target_link_libraries(tests gtest)
 target_link_libraries(tests pthread)
 
