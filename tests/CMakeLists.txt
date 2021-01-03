@@ -80,11 +80,15 @@ target_sources(tests PUBLIC ${sources})
 target_sources(tests PUBLIC ${TestSource}/main.cpp)
 
 
-find_library(GTEST_LIB NAMES gtest REQUIRED)
-#find_package(GTest REQUIRED PATHS "")
-message("GTEST: ${GTEST_LIB}")
+#find_library(GTEST_LIB NAMES gtest)
+find_library(GTEST_PATH NAMES gtest PATH "/usr/src/googletest/lib/libgtest.a")
+set(GTEST_PATH  "/usr/src/googletest/lib/libgtest.a")
+message("GTEST: ${GTEST_PATH}")
+
+find_library(PTHREAD_LIB pthread "/usr")
+message("PTHREAD: ${PTHREAD_LIB}")
+target_link_libraries(tests ${GTEST_PATH})
 #target_link_libraries(tests gtest)
-target_link_libraries(tests ${GTEST_LIB})
 target_link_libraries(tests pthread)
 
 include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
