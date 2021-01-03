@@ -1,69 +1,62 @@
 import copy
-def SetAddresses(entries):
-    address = 0
-    for entry in entries:
-        entry.address = address
-        address += entry.registers
+from jinja2 import Template, Environment, FileSystemLoader
+from modbus_generator import DataType, FunctionType, SetAddresses, Slave, MapEntry, ModbusRegister
+import modbus_generator
+import sys
 
-def GetInputMapEntries():
-    MapEntries = (
-        MapEntry('str20', DataType.uint8_t, 20, FunctionType.kInput),
-        MapEntry('str', DataType.uint8_t, 4, FunctionType.kInput),
-        MapEntry('int16', DataType.uint32_t, 1, FunctionType.kInput),
-        MapEntry('int32', DataType.uint32_t, 1, FunctionType.kInput),
-        MapEntry('int641', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int642', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int643', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int644', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int645', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int646', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int647', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int648', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int649', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int640', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int6411', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int6412', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int6413', DataType.uint64_t, 1, FunctionType.kInput),
-        MapEntry('int6422', DataType.uint64_t, 1, FunctionType.kInput),
-    )
+input_registers = (
+    ModbusRegister('str20', DataType.uint8_t, 20, FunctionType.kInput),
+    ModbusRegister('str', DataType.uint8_t, 4, FunctionType.kInput),
+    ModbusRegister('int16', DataType.uint32_t, 1, FunctionType.kInput),
+    ModbusRegister('int32', DataType.uint32_t, 1, FunctionType.kInput),
+    ModbusRegister('int641', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int642', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int643', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int644', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int645', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int646', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int647', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int648', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int649', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int640', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int6411', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int6412', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int6413', DataType.uint64_t, 1, FunctionType.kInput),
+    ModbusRegister('int6422', DataType.uint64_t, 1, FunctionType.kInput),
+)
 
-    SetAddresses(MapEntries)
-    return MapEntries
+holding_registers = (
+    ModbusRegister('str20', DataType.uint8_t, 20, FunctionType.kInput),
+    ModbusRegister('str', DataType.uint8_t, 4, FunctionType.kHolding),
+    ModbusRegister('int16', DataType.uint32_t, 1, FunctionType.kHolding),
+    ModbusRegister('int32', DataType.uint32_t, 1, FunctionType.kHolding),
+    ModbusRegister('int641', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int642', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int643', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int644', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int645', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int646', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int647', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int648', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int649', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int640', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int6411', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int6412', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int6413', DataType.uint64_t, 1, FunctionType.kHolding),
+    ModbusRegister('int6422', DataType.uint64_t, 1, FunctionType.kHolding),
+)
 
-def GetOutputMapEntries():
-    MapEntries = (
-        MapEntry('str20', DataType.uint8_t, 20, FunctionType.kInput),
-        MapEntry('str', DataType.uint8_t, 4, FunctionType.kHolding),
-        MapEntry('int16', DataType.uint32_t, 1, FunctionType.kHolding),
-        MapEntry('int32', DataType.uint32_t, 1, FunctionType.kHolding),
-        MapEntry('int641', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int642', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int643', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int644', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int645', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int646', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int647', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int648', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int649', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int640', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int6411', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int6412', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int6413', DataType.uint64_t, 1, FunctionType.kHolding),
-        MapEntry('int6422', DataType.uint64_t, 1, FunctionType.kHolding),
-    )
+def GetInputRegisterMapEntries():
+    InputRegisterMapEntries = [MapEntry(register=pt) for pt in input_registers]
+    SetAddresses(InputRegisterMapEntries)
+    return InputRegisterMapEntries
 
-    SetAddresses(MapEntries)
-    return MapEntries
-
-def Make(entries, template_dir, name, namespace):
-    MakeHeader(template_dir, entries, name + ".h", namespace)
+def GetHoldingRegisterMapEntries():
+    HoldingRegisterMapEntries = [MapEntry(register=pt) for pt in holding_registers]
+    SetAddresses(HoldingRegisterMapEntries)
+    return HoldingRegisterMapEntries
 
 if __name__ == "__main__":
-    template_dir = "/home/simon/software/Modbus/templates"
-    import sys
-    sys.path.append(template_dir)
-    from MappedDataStore import *
-
-    Make(GetInputMapEntries(), template_dir, name="TestInputRegisterMappedDataStore", namespace="InputRegisters")
-    Make(GetOutputMapEntries(), template_dir, name="TestHoldingRegisterMappedDataStore", namespace="HoldingRegisters")
+    modbus_generator.MakeHeader(GetHoldingRegisterMapEntries(), "TestHoldingRegisterMappedDataStore.h", namespace="HoldingRegisters")
+    modbus_generator.MakeHeader(GetInputRegisterMapEntries(), "TestInputRegisterMappedDataStore.h", namespace="InputRegisters")
 

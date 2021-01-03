@@ -29,9 +29,9 @@ Using mapped data stores allows the user to expose the actual data types being u
 the serialization encapsulated.
 
 using HoldingRegisterController =
-    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegisters::DataMap>>;
+    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController>>;
 using InputRegisterController =
-    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::DataMap>>;
+    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController>>;
 
 
 

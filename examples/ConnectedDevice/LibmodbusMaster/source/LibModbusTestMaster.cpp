@@ -40,9 +40,15 @@ inline int ConnectRtu(modbus_t** ctx, const char* dev_name, const std::size_t ba
 }
 
 int main(int argc, char** argv) {
-  HoldingRegisters::DataMap hregs;
-  InputRegisters::DataMap inregs;
+  InputRegisters::MemoryMap input_map_;
+  InputRegisters::MemoryMapController input_map_controller_{&input_map_};
+  Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController> input_register_data_store_{&input_map_controller_};
+  HoldingRegisters::MemoryMap holding_map_;
+  HoldingRegisters::MemoryMapController holding_map_controller_{&holding_map_};
+  Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController> holding_register_data_store_{&holding_map_controller_};
 
+  auto& inregs = input_register_data_store_;
+  auto& hregs = holding_register_data_store_;
   const char* dev_name = nullptr;
   uint8_t slave_address = 246;
   if(argc > 1) {
@@ -86,14 +92,15 @@ int main(int argc, char** argv) {
   printf("\n\nWriting/Reading Input Registers\n\n");
 
   
-  printf("Reading version\n");
-  std::array<uint16_t, 32> read_buffer_version {};
+printf("Reading version\n");
+void ReadWriteEntry(const std::size_t address_start, const std::size_t register_count)
+  uint16_t* data_buffer = new uint16_t[register_count];
   sleep(1);
-  modbus_read_input_registers(ctx, 0, 32, read_buffer_version.data());
-  {
-  std::array<uint8_t, 32 * sizeof(uint16_t)> u8array{};
-  Modbus::MakeRegistersToBytes(read_buffer_version, ArrayView<uint8_t>(u8array.size(), u8array.data()));
-  inregs.SetFieldFromAddress(0, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
+  modbus_read_input_registers(ctx, address_start, register_count, data_buffer);
+  uint8_t* u8_array = new uint8_t[register_count * sizeof(uint16_t)];
+  Modbus::MakeRegistersToBytes(ArrayView<uint8_t>(data_buffer, sizeof(data_buffer)/sizeof(data_buffer[0])),
+      ArrayView<uint8_t>(register_count * sizeof(uint16_t), u8array));
+  inregs.SetFieldFromAddress(address_start, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
   const auto value = inregs.get_version();
   
   for (auto pt : value) {

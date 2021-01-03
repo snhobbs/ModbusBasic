@@ -17,12 +17,11 @@
 #include <vector>
 #include <array>
 
-TEST(InputRegister, GetMap) {
-  Modbus::MappedRegisterDataStore<InputRegisters::DataMap> data_controller;
-  InputRegisters::DataMap& map = data_controller.GetMapObject();
-}
 TEST(InputRegister, Instantiate) {
-  Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::DataMap>> input_controller;
+  InputRegisters::MemoryMap input_map_;
+  InputRegisters::MemoryMapController input_map_controller_{&input_map_};
+  Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController> input_register_data_store_{&input_map_controller_};
+  Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController>> input_controller{&input_register_data_store_};
 }
 #if 0
   bool WriteLocationValid(std::size_t address, std::size_t count) {

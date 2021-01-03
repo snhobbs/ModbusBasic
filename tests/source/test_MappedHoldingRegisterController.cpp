@@ -18,12 +18,11 @@
 #include <vector>
 
 TEST(HoldingRegister, GetMap) {
-  Modbus::MappedRegisterDataStore<HoldingRegisters::DataMap> data_controller;
-  HoldingRegisters::DataMap &map = data_controller.GetMapObject();
+  HoldingRegisters::MemoryMap holding_map_;
+  HoldingRegisters::MemoryMapController holding_map_controller_{&holding_map_};
+  Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController> holding_register_data_store_{&holding_map_controller_};
 }
 TEST(HoldingRegister, Controller) {
-  Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegisters::DataMap>>
-      holding_controller;
 }
 #if 0
   bool WriteLocationValid(std::size_t address, std::size_t count) {

@@ -41,7 +41,7 @@ TEST_F(HoldingRegisterDataFixture, RegisterReadWrite) {
 
 struct HoldingRegisterControllerFixture : public ::testing::Test {
   Modbus::RegisterDataStore<kRegisters> dc{};
-  Modbus::HoldingRegisterController<typeof(dc)> cc;
+  Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
 };
 
 TEST_F(HoldingRegisterControllerFixture, AddressValid) {
@@ -73,7 +73,7 @@ TEST_F(HoldingRegisterControllerFixture, RegisterReadWriteAddress) {
 
 struct ValidateHoldingRegisterFramesFixture: public ::testing::Test {
   Modbus::RegisterDataStore<kRegisters> dc{};
-  Modbus::HoldingRegisterController<typeof(dc)> cc;
+  Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
   std::array<uint8_t, 64> buffer;
   ArrayView<uint8_t> frame_data{buffer.size(), buffer.data()};
 

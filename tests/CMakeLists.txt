@@ -88,10 +88,12 @@ include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
 target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
+if(RUN_ANALYSIS)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/StaticAnalysis.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Utilities.cmake)
 GetStaticAnalysisFiles(tests "${StaticExcludes}")
 message(STATUS "Analyze ${AnalyseFiles}")
 StaticAnalysis("${AnalyseFiles}")
+endif()
 
 add_test(NAME tests COMMAND tests)

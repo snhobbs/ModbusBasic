@@ -12,6 +12,7 @@
  */
 
 #pragma once
+#include <Modbus/Modbus.h>
 #include <ArrayView/ArrayView.h>
 #include <Utilities/CommonTypes.h>
 #include <Utilities/TypeConversion.h>

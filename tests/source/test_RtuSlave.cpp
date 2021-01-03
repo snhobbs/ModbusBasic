@@ -35,10 +35,14 @@ struct RtuSlaveFixture : public ::testing::Test {
   CoilController coil_controller;
   using DiscreteController = Modbus::DiscreteInputController<Modbus::BitFieldDataStore<coil_count>>;
   DiscreteController discrete_input_controller;
+
   using HoldingController = Modbus::HoldingRegisterController<Modbus::RegisterDataStore<holding_register_count>>;
-  HoldingController holding_register_controller;
+  Modbus::RegisterDataStore<holding_register_count> holding_map;
+  HoldingController holding_register_controller{&holding_map};
+
   using InputController = Modbus::InputRegisterController<Modbus::RegisterDataStore<holding_register_count>>;
-  InputController input_register_controller;
+  Modbus::RegisterDataStore<holding_register_count> input_map;
+  InputController input_register_controller{&input_map};
 
   Modbus::ProtocolRtuSlave<CoilController, HoldingController, DiscreteController, InputController> slave{&crc16,
             kSlaveAddress,
