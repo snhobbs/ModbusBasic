@@ -132,7 +132,31 @@ enum class CoilState : uint16_t {
   kInvalid = 0xffff
 };
 // const constexpr extern Modbus::Function valid_functions[18];
-const inline constexpr std::array<const Modbus::Function, 19> valid_functions{
+inline const constexpr std::array<const Modbus::Function, 19> GetValidFunctions() {
+  return {
+    Modbus::Function::kReadCoils,
+    Modbus::Function::kReadDiscreteInputs,
+    Modbus::Function::kReadMultipleHoldingRegisters,
+    Modbus::Function::kReadInputRegisters,
+    Modbus::Function::kWriteSingleCoil,
+    Modbus::Function::kWriteSingleHoldingRegister,
+    Modbus::Function::kReadExceptionStatus,
+    Modbus::Function::kDiagnostic,
+    Modbus::Function::kGetComEventCounter,
+    Modbus::Function::kGetComEventLog,
+    Modbus::Function::kWriteMultipleCoils,
+    Modbus::Function::kWriteMultipleHoldingRegisters,
+    Modbus::Function::kReportSlaveId,
+    Modbus::Function::kReadFileRecord,
+    Modbus::Function::kWriteFileRecord,
+    Modbus::Function::kMaskWriteRegister,
+    Modbus::Function::kReadWriteMultipleRegisters,
+    Modbus::Function::kReadFifoQueue,
+    Modbus::Function::kReadDeviceIdentification,
+  };
+}
+#if 0
+const inline constexpr std::array<const Modbus::Function, 19> valid_functions {
     Modbus::Function::kReadCoils,
     Modbus::Function::kReadDiscreteInputs,
     Modbus::Function::kReadMultipleHoldingRegisters,
@@ -153,7 +177,7 @@ const inline constexpr std::array<const Modbus::Function, 19> valid_functions{
     Modbus::Function::kReadFifoQueue,
     Modbus::Function::kReadDeviceIdentification,
 };
-
+#endif
 inline constexpr Modbus::AddressSpace GetAddressSpaceFromFunction(
     Modbus::Function function) {
   switch (function) {
@@ -201,6 +225,27 @@ inline constexpr Modbus::AddressSpace GetAddressSpaceFromFunction(
       assert(0);
       return Modbus::AddressSpace::kUnmapped;
   }
+}
+
+inline constexpr Modbus::Function GetFunction(uint8_t code) {
+  for (auto i : Modbus::GetValidFunctions()) {
+    if (code == static_cast<uint8_t>(i)) {
+      return i;
+    }
+  }
+  return Modbus::Function::kNone;
+}
+
+inline constexpr bool FunctionCodeIsValid(uint8_t code) {
+  if (code > static_cast<uint8_t>(Function::kReadDeviceIdentification)) {
+    return false;
+  }
+  for (auto pt : Modbus::GetValidFunctions()) {
+    if (static_cast<uint8_t>(pt) == code) {
+      return true;
+    }
+  }
+  return false;
 }
 
 struct Frame {

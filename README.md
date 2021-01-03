@@ -34,7 +34,6 @@ using InputRegisterController =
     Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController>>;
 
 
-
 1. Subclass of ProtocolRtuSlave.
   - Timeouts
   - When to process packets

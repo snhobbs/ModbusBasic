@@ -24,27 +24,6 @@ using Crc16 = uint16_t (*)(const ArrayView<uint8_t> &, std::size_t);
 inline constexpr std::size_t GetRequiredPacketSize(const Modbus::Frame &packet) {
   return Command::kHeaderLength + packet.data_length + Command::kFooterLength;
 }
-inline constexpr Modbus::Function GetFunction(uint8_t code) {
-  for (auto i : Modbus::valid_functions) {
-    if (code == static_cast<uint8_t>(i)) {
-      return i;
-    }
-  }
-  return Modbus::Function::kNone;
-}
-
-
-inline constexpr bool FunctionCodeIsValid(uint8_t code) {
-  if (code > static_cast<uint8_t>(Function::kReadDeviceIdentification)) {
-    return false;
-  }
-  for (auto pt : valid_functions) {
-    if (static_cast<uint8_t>(pt) == code) {
-      return true;
-    }
-  }
-  return false;
-}
 
 inline int32_t CalculateMetaDataBytesRemaining(const Function function) {
   if (function == Function::kReadCoils) {
@@ -179,10 +158,7 @@ class ReadContext {
   }
 };
 
-using RtuFrame = Modbus::Frame;
 class ProtocolRtu : public Protocol {
- public:
- private:
   static const constexpr uint32_t kHeaderLength =
       Command::kHeaderLength;
   static const constexpr uint32_t kFooterLength = Command::kFooterLength;
@@ -195,6 +171,7 @@ class ProtocolRtu : public Protocol {
   const Crc16 crc16_;
 
  public:
+  explicit ProtocolRtu(Crc16 crc16) : crc16_{crc16} {}
   bool FrameCrcIsValid(const Modbus::Frame &frame) const {
     std::array<uint8_t, 256> data{};
     data[kAddressLocation] = frame.address;
@@ -265,9 +242,6 @@ class ProtocolRtu : public Protocol {
     }
     return 0;
   }
-
- public:
-  explicit ProtocolRtu(Crc16 crc16) : crc16_{crc16} {}
 };
 }  // namespace Modbus
 

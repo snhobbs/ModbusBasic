@@ -37,11 +37,17 @@ using SlaveBase =
       Modbus::ProtocolRtuSlave<CoilController, HoldingRegisterController, DiscreteInputController, InputRegisterController>;
 
 class LinuxSlave : public SlaveBase {
-  public:
+ public:
+  //  Modbus::BitFieldDataStore<kCoilCount> coil_data_store;
   CoilController coils_;
-  HoldingRegisterController hregs_;
+
+  Modbus::RegisterDataStore<kRegisterCount> holding_register_data_store;
+  HoldingRegisterController hregs_{&holding_register_data_store};
+
   DiscreteInputController dins_;
-  InputRegisterController inregs_;
+
+  Modbus::RegisterDataStore<kRegisterCount> input_register_data_store;
+  InputRegisterController inregs_{&input_register_data_store};
 
   static const constexpr uint8_t kSlaveAddress = 0x03;
 
