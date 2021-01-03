@@ -80,8 +80,8 @@ target_sources(tests PUBLIC ${sources})
 target_sources(tests PUBLIC ${TestSource}/main.cpp)
 
 
-find_package(gtest REQUIRED)
-target_link_libraries(tests gtest)
+find_package(GTest REQUIRED)
+target_link_libraries(tests GTest)
 target_link_libraries(tests pthread)
 
 include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
