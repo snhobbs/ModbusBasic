@@ -40,9 +40,14 @@ using SlaveBase =
 class LinuxSlave : public SlaveBase {
  public:
   CoilController coils_;
-  HoldingRegisterController hregs_;
+
+  Modbus::RegisterDataStore<kRegisterCount> holding_register_data_store;
+  HoldingRegisterController hregs_{&holding_register_data_store};
+
   DiscreteInputController dins_;
-  InputRegisterController inregs_;
+
+  Modbus::RegisterDataStore<kRegisterCount> input_register_data_store;
+  InputRegisterController inregs_{&input_register_data_store};
 
  private:
   static const constexpr uint8_t kSlaveAddress = 0x03;

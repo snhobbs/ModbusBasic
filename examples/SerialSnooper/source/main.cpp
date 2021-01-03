@@ -19,9 +19,9 @@ int main(int argc, char* argv[]){
     slave.Run();
     if (loops%(1<<20) == 0) {
       printf("[");
-      const auto dstore = slave.hregs_.GetDataStore();
-      for (std::size_t i = 0; i < dstore->size(); i++) {
-        printf(" 0x%x", dstore->GetRegister(i));
+      const auto dstore = slave.holding_register_data_store;
+      for (std::size_t i = 0; i < dstore.size(); i++) {
+        printf(" 0x%x", dstore.GetRegister(i));
       }
       printf("]\n");
     }

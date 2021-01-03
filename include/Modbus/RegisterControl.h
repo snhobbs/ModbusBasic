@@ -294,7 +294,7 @@ class HoldingRegisterController {
  public:
   explicit HoldingRegisterController(T* register_data) : register_data_{register_data} {}
   T* GetDataStore(void) {
-    return &register_data_;
+    return register_data_;
   }
   bool WriteLocationValid(std::size_t address, std::size_t count) const {
     return register_data_->WriteLocationValid(address, count);
