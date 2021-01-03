@@ -40,6 +40,7 @@ class BitFieldDataStore : public DataStore {
 
  public:
   constexpr BitFieldDataStore() {}
+  std::size_t size() const { return bit_field_.size(); } 
   bool IsAddressValid(std::size_t address) const {
     return address + 1 <= GetAddressStart() + bit_field_.size();
   }

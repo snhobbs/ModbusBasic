@@ -144,8 +144,6 @@ class ProtocolRtuSlave {
     }
     if (response_code == 0) {
       slave_.FrameResponse(frame, &response);
-      // Utilities::SwitchByteOrder<sizeof(uint16_t)>(ArrayView<uint8_t>{response_.GetLength()
-      // - 2, response_.data() + 2});
       slave_.SetResponseValid(true);
     }
     slave_.SetResponse(response);

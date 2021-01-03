@@ -1,4 +1,5 @@
 #include <Utilities/CommonTypes.h>
+#include <Utilities/TypeConversion.h>
 #include <ArrayView/ArrayView.h>
 #include <cstdint>
 

@@ -15,7 +15,6 @@
 #include <Modbus/Modbus.h>
 #include <Modbus/BitControl.h>
 #include <Modbus/DataStore.h>
-#include <Modbus/DataTypeController.h>
 #include <Utilities/TypeConversion.h>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -31,7 +30,7 @@ struct CoilDataFixture : public ::testing::Test {
   Modbus::BitFieldDataStore<kCoilCount> dc{};
 };
 TEST_F(CoilDataFixture, BitFieldRead) {
-    for (std::size_t address = dc.GetAddressStart(); address < dc.GetAddressStart() + dc.GetSize(); address++) {
+    for (std::size_t address = dc.GetAddressStart(); address < dc.GetAddressStart() + dc.size(); address++) {
     dc.WriteElement(address, true);
     EXPECT_TRUE(dc.ReadElement(address) == true);
     dc.WriteElement(address, false);
@@ -39,7 +38,7 @@ TEST_F(CoilDataFixture, BitFieldRead) {
     dc.WriteElement(address, true);
     EXPECT_TRUE(dc.ReadElement(address) == true);
   }
-  for (std::size_t index = 0; index < dc.GetSize(); index++) {
+  for (std::size_t index = 0; index < dc.size(); index++) {
     std::size_t address = dc.GetAddressStart() + index;
     EXPECT_TRUE(dc.ReadElement(address) == true);
   }
@@ -48,12 +47,12 @@ TEST_F(CoilDataFixture, BitFieldRead) {
 
 #if 0
 TEST_F(CoilDataFixture, BitFieldWriteSingleBit) {
-  for (std::size_t index = 0; index < dc.GetSize(); index++) {
+  for (std::size_t index = 0; index < dc.size(); index++) {
     std::size_t address = dc.GetAddressStart() + index;
     dc.WriteElement(address, true);
     EXPECT_TRUE(dc.ReadElement(address) == true);
 
-    for (std::size_t sub_address = dc.GetAddressStart(); sub_address < dc.GetAddressStart() + dc.GetSize(); sub_address++) {
+    for (std::size_t sub_address = dc.GetAddressStart(); sub_address < dc.GetAddressStart() + dc.size(); sub_address++) {
       if (sub_address == address) {
         EXPECT_TRUE(dc.ReadElement(sub_address) == true);
       } else {

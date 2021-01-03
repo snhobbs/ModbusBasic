@@ -63,7 +63,7 @@ struct RtuProtocolFixture : public ::testing::Test {
 };
 
 TEST_F(RtuProtocolFixture, FrameCRCIsValidFunction) {
-  for (auto func : Modbus::valid_functions) {
+  for (auto func : Modbus::GetValidFunctions()) {
     std::array<uint8_t, 64> frame_data;
     Modbus::Frame packet{0x0f, func, data.size(),
                             ArrayView<uint8_t>{data.size(), data.data()}};
@@ -75,13 +75,13 @@ TEST_F(RtuProtocolFixture, FrameCRCIsValidFunction) {
 TEST_F(RtuProtocolFixture, FrameCRCIsValid_false) {
   for (uint32_t i = 0; i <= 0xff; i++) {
     std::array<uint8_t, 64> frame_data;
-    Modbus::Frame packet{0x0f, Modbus::valid_functions[0], data.size(),
+    Modbus::Frame packet{0x0f, Modbus::GetValidFunctions()[0], data.size(),
                             ArrayView<uint8_t>{data.size(), data.data()}};
 
     ArrayView frame{data.size() + kFrameOverhead, frame_data.data()};
     prot.Frame(packet, &frame);
     frame[Modbus::Command::CommandPacket::kFunction] = static_cast<uint8_t>(i);
-    if (i == static_cast<uint8_t>(Modbus::valid_functions[0])) {
+    if (i == static_cast<uint8_t>(Modbus::GetValidFunctions()[0])) {
       EXPECT_TRUE(prot.FrameCrcIsValid(frame));
     } else {
       EXPECT_TRUE(!prot.FrameCrcIsValid(frame));
@@ -90,13 +90,13 @@ TEST_F(RtuProtocolFixture, FrameCRCIsValid_false) {
 }
 TEST_F(RtuProtocolFixture, ReadFrame) {
   std::array<uint8_t, 64> frame_data;
-  Modbus::Frame packet{0xff, Modbus::valid_functions[0], data.size(),
+  Modbus::Frame packet{0xff, Modbus::GetValidFunctions()[0], data.size(),
                           ArrayView<uint8_t>{data.size(), data.data()}};
   ArrayView frame{data.size() + kFrameOverhead, frame_data.data()};
   prot.Frame(packet, &frame);
   std::array<uint8_t, 128> data_in{};
   Modbus::Frame packet_read{
-      0x0, Modbus::valid_functions.back(), 0,
+      0x0, Modbus::GetValidFunctions().back(), 0,
       ArrayView<uint8_t>{data_in.size(), data_in.data()}};
   prot.ReadFrame(frame, &packet_read);
   for (std::size_t i = 0; i < data.size(); i++) {

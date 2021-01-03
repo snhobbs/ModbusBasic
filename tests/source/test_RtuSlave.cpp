@@ -81,7 +81,7 @@ struct RtuSlaveFixture : public ::testing::Test {
 
 TEST_F(RtuSlaveFixture, SlaveRunCommand) {
   std::array<uint8_t, 64> frame_data;
-  Modbus::Frame packet{kSlaveAddress, Modbus::valid_functions[0],
+  Modbus::Frame packet{kSlaveAddress, Modbus::GetValidFunctions()[0],
                           data.size(),
                           ArrayView<uint8_t>{data.size(), data.data()}};
   ArrayView<uint8_t> frame{data.size() + kFrameOverhead, frame_data.data()};
@@ -89,7 +89,7 @@ TEST_F(RtuSlaveFixture, SlaveRunCommand) {
   rtu.Frame(packet, &frame);
   std::array<uint8_t, 128> data_in{};
   Modbus::Frame packet_read{
-      0x0, Modbus::valid_functions.back(), data_in.size(),
+      0x0, Modbus::GetValidFunctions().back(), data_in.size(),
       ArrayView<uint8_t>{data_in.size(), data_in.data()}};
 
   rtu.ReadFrame(frame, &packet_read);
@@ -105,7 +105,7 @@ TEST_F(RtuSlaveFixture, SlaveRunCommand) {
 #if 0
 TEST_F(RtuSlaveFixture, SlaveAddressMatch) {
   for (std::size_t i = 0; i < 0xff; i++) {
-    Modbus::Frame packet{static_cast<uint8_t>(i), Modbus::valid_functions[0],
+    Modbus::Frame packet{static_cast<uint8_t>(i), Modbus::GetValidFunctions()[0],
                             data.size(),
                             ArrayView<uint8_t>{data.size(), data.data()}};
     if (i == kSlaveAddress) {
