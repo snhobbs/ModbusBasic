@@ -80,8 +80,8 @@ target_sources(tests PUBLIC ${sources})
 target_sources(tests PUBLIC ${TestSource}/main.cpp)
 
 
-find_library(GTEST_LIB gtest REQUIRED)
-#find_package(GTest REQUIRED PATHS "/usr/include/googletest/generated")
+find_library(GTEST_LIB gtest REQUIRED PATHS "/usr/src/googletest/lib")
+#find_package(GTest REQUIRED PATHS "")
 #message("GTEST: ${GTest_DIR}")
 #target_link_libraries(tests gtest)
 target_link_libraries(tests ${GTEST_LIB})
