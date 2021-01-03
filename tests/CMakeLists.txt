@@ -79,7 +79,8 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/source sources)
 target_sources(tests PUBLIC ${sources})
 target_sources(tests PUBLIC ${TestSource}/main.cpp)
 
-find_package(gtest QUIET)
+
+find_package(gtest REQUIRED)
 target_link_libraries(tests gtest)
 target_link_libraries(tests pthread)
 
