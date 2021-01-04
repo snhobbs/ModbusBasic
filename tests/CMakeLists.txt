@@ -95,6 +95,8 @@ include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
 include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
 target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include/CppUtilities/include)
+target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include/CppUtilities/include/sprout)
 
 if(RUN_ANALYSIS)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/StaticAnalysis.cmake)

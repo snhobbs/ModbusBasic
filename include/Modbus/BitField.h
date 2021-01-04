@@ -3,19 +3,19 @@
 #include <ArrayView/ArrayView.h>
 #include <cstdint>
 
+#if 0
+#include <BitControl/BitField.h>
+#else
+#include <sprout/sprout/bitset/bitset.hpp>
+
 template<std::size_t kElements> 
 class BitField {
-  static const std::size_t kByteSize = 8;
   static const constexpr std::size_t kLog2Of8 = 3;
-  static_assert(1 << kLog2Of8 == 8);
-  // static const constexpr std::size_t kDataBytes = kSize / 8 + 1;
-  static const constexpr std::size_t kByteCount =
-        Utilities::CalcNumberOfBytesToFitBits(kElements);
-
-  std::array<uint8_t, kByteCount> data_store_ __attribute__((aligned (sizeof(std::size_t))));
+  sprout::bitset<kElements> bits_{}; 
+  const std::size_t kByteSize = 8;
 
  public:
-  static std::size_t size(void) {return GetSize();}
+  std::size_t size(void) const {return bits_.size();}
   static constexpr std::size_t GetSize(void) { return kElements; }
   static constexpr std::size_t GetDataArrayIndex(std::size_t address) {
     return address >> kLog2Of8;
@@ -27,16 +27,13 @@ class BitField {
     return static_cast<uint8_t>(1 << GetDataByteIndex(address));
   }
   bool ReadElement(uint16_t address) const {
-    return data_store_[GetDataArrayIndex(address)] & GetByteMask(address);
+    return bits_[address];
   }
 
   void WriteElement(uint16_t address, bool state) {
-    if (state) {
-      data_store_[GetDataArrayIndex(address)] |= (GetByteMask(address));
-    } else {
-      data_store_[GetDataArrayIndex(address)] &= ~(GetByteMask(address));
-    }
+    bits_.set(address, state);
   }
+
   void ReadElementsToBytes(const uint16_t starting_address,
                            const uint16_t element_count,
                            ArrayView<uint8_t> *response_data) const {
@@ -52,7 +49,7 @@ class BitField {
           byte_value |= static_cast<uint8_t>(1 << byte_index);
         }
       }
-      response_data->operator[](byte_number) = byte_value;
+      *response_data->operator[](byte_number) = byte_value;
     }
   }
   void WriteMultipleElementsFromBytes(const uint16_t starting_address,
@@ -71,4 +68,5 @@ class BitField {
     }
   }
 };
+#endif
 
