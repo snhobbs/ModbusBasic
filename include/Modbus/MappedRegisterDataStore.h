@@ -36,7 +36,10 @@ template <typename T> class MappedRegisterDataStore : public DataStore {
   bool new_data_ = false;
   T *memory_controller_;
 
-private:
+public:
+  explicit MappedRegisterDataStore(T *memory_controller)
+      : memory_controller_{memory_controller} {}
+
   std::size_t GetMemoryMapEntryIndex(std::size_t address) const {
     for (std::size_t i = 0; i < memory_controller_->entry_positions_.size();
          i++) {
@@ -48,9 +51,6 @@ private:
     return 0;
   }
 
-public:
-  explicit MappedRegisterDataStore(T *memory_controller)
-      : memory_controller_{memory_controller} {}
   bool IsNewData(void) const { return new_data_; }
   void SetNewData(bool value) { new_data_ = value; }
   void SetField(const std::size_t identifier,
