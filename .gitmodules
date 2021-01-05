@@ -7,3 +7,6 @@
 [submodule "examples/pymodbus_tests/pymodbus"]
 	path = examples/pymodbus_tests/pymodbus
 	url = git@github.com:riptideio/pymodbus.git
+[submodule "libs/DataStores"]
+	path = libs/DataStores
+	url = git@github.com:snhobbs/DataStores.git
