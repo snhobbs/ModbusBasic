@@ -21,14 +21,14 @@ TEST(DataMapTest, Serialization) {
 }
 
 TEST(DataMapTest, GettersAndSetters) {
-  HoldingRegisters::MemoryMap data_store;
-  HoldingRegisters::MemoryMapController map{&data_store};
+  HoldingRegisters data_store;
+  HoldingRegistersWrapper map{&data_store};
   std::array<uint8_t, 64> buff{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'l'};
   ArrayView<uint8_t> data_view{buff.size(), buff.data()};
 
   const auto str = map.get_str();
   map.set_str(buff.data(), str.size());
-  EXPECT_EQ(str.size(), sizeof(HoldingRegisters::MemoryMap::str));
+  EXPECT_EQ(str.size(), sizeof(HoldingRegisters::str));
   for (std::size_t i = 0; i < str.size(); i++) {
     EXPECT_EQ(str[i], buff[i]);
   }
@@ -45,8 +45,8 @@ TEST(DataMapTest, GettersAndSetters) {
  * Set field, read, set a new value, write original value array, check equal to original setting
  */
 TEST(DataMapTest, Serialize) {
-  HoldingRegisters::MemoryMap data_store;
-  HoldingRegisters::MemoryMapController map{&data_store};
+  HoldingRegisters data_store;
+  HoldingRegistersWrapper map{&data_store};
   std::array<uint8_t, 64> data{0};
   ArrayView<uint8_t> data_view{data.size(), data.data()};
   EXPECT_EQ(map.get_int645(), 0);

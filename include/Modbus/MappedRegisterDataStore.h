@@ -38,10 +38,10 @@ template <typename T> class MappedRegisterDataStore : public DataStore {
 
 private:
   std::size_t GetMemoryMapEntryIndex(std::size_t address) const {
-    for (std::size_t i = 0; i < memory_controller_->memory_entries_.size();
+    for (std::size_t i = 0; i < memory_controller_->entry_positions_.size();
          i++) {
       if (address * sizeof(uint16_t) <=
-          memory_controller_->memory_entries_[i].offset) {
+          memory_controller_->entry_positions_[i].offset) {
         return i;
       }
     }
@@ -56,12 +56,12 @@ public:
   void SetField(const std::size_t identifier,
                 const ArrayView<const uint8_t> &data_view) {
     SetNewData(true);
-    memory_controller_->SetField(identifier, data_view);
+    memory_controller_->SetField(identifier, data_view.data(), data_view.size());
   }
 
   void GetField(const std::size_t identifier,
                 ArrayView<uint8_t> *data_view) const {
-    return memory_controller_->GetField(identifier, data_view);
+    return memory_controller_->GetField(identifier, data_view->data(), data_view->size());
   }
 
 public:
@@ -79,7 +79,7 @@ public:
   }
 
   bool WriteLocationValid(std::size_t address, std::size_t count) const {
-    const auto &entry = memory_controller_->memory_entries_.at(
+    const auto &entry = memory_controller_->entry_positions_.at(
         GetMemoryMapEntryIndex(address - GetAddressStart()));
     return (address * sizeof(uint16_t) == entry.offset) &&
            (entry.size == count * sizeof(uint16_t));

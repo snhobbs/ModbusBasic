@@ -15,9 +15,13 @@ target_link_libraries( ${PROJECT_NAME} ubsan)
 #target_link_libraries( ${PROJECT_NAME} msan)
 
 #find_package(Modbus 1.0.1 REQUIRED)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../posix)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../common)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source)
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR}/DataStores/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR}/CppUtilities/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../posix)
 
 target_compile_options(
   ${PROJECT_NAME}

@@ -18,9 +18,9 @@
 #include <vector>
 
 TEST(HoldingRegister, GetMap) {
-  HoldingRegisters::MemoryMap holding_map_;
-  HoldingRegisters::MemoryMapController holding_map_controller_{&holding_map_};
-  Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController> holding_register_data_store_{&holding_map_controller_};
+  HoldingRegisters holding_map_;
+  HoldingRegistersWrapper holding_map_controller_{&holding_map_};
+  Modbus::MappedRegisterDataStore<HoldingRegistersWrapper> holding_register_data_store_{&holding_map_controller_};
 }
 TEST(HoldingRegister, Controller) {
 }

@@ -19,6 +19,7 @@
 #include <Modbus/DataStore.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <Modbus/RegisterControl.h>
+#include <Modbus/MappedRegisterDataStore.h>
 #include <Utilities/TypeConversion.h>
 #include <cassert>
 #include <cstdint>
@@ -32,21 +33,22 @@ using DiscreteInputController =
     Modbus::DiscreteInputController<Modbus::BitFieldDataStore<kCoilCount>>;
 
 using HoldingRegisterController =
-    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController>>;
+    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegistersWrapper>>;
 using InputRegisterController =
-    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController>>;
+    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegistersWrapper>>;
 using SlaveBase =
     Modbus::ProtocolRtuSlave<CoilController, HoldingRegisterController,
                              DiscreteInputController, InputRegisterController>;
 
 class LinuxSlave : public SlaveBase {
  public:
-  InputRegisters::MemoryMap input_map_;
-  InputRegisters::MemoryMapController input_map_controller_{&input_map_};
-  Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController> input_register_data_store_{&input_map_controller_};
-  HoldingRegisters::MemoryMap holding_map_;
-  HoldingRegisters::MemoryMapController holding_map_controller_{&holding_map_};
-  Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController> holding_register_data_store_{&holding_map_controller_};
+  InputRegisters input_map_;
+  InputRegistersWrapper input_map_controller_{&input_map_};
+  Modbus::MappedRegisterDataStore<InputRegistersWrapper> input_register_data_store_{&input_map_controller_};
+
+  HoldingRegisters holding_map_;
+  HoldingRegistersWrapper holding_map_controller_{&holding_map_};
+  Modbus::MappedRegisterDataStore<HoldingRegistersWrapper> holding_register_data_store_{&holding_map_controller_};
 
   CoilController coils_;
   HoldingRegisterController hregs_{&holding_register_data_store_};

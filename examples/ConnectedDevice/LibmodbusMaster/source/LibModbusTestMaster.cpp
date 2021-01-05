@@ -1,7 +1,8 @@
 
 #include "HoldingRegisterMappedDataStore.h"
 #include "InputRegisterMappedDataStore.h"
-#include "Modbus/DataConversion.h"
+#include <Modbus/Utilities.h>
+#include <Modbus/MappedRegisterDataStore.h>
 #include <modbus.h>
 #include <cassert>
 #include <iostream>
@@ -40,15 +41,13 @@ inline int ConnectRtu(modbus_t** ctx, const char* dev_name, const std::size_t ba
 }
 
 int main(int argc, char** argv) {
-  InputRegisters::MemoryMap input_map_;
-  InputRegisters::MemoryMapController input_map_controller_{&input_map_};
-  Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController> input_register_data_store_{&input_map_controller_};
-  HoldingRegisters::MemoryMap holding_map_;
-  HoldingRegisters::MemoryMapController holding_map_controller_{&holding_map_};
-  Modbus::MappedRegisterDataStore<HoldingRegisters::MemoryMapController> holding_register_data_store_{&holding_map_controller_};
+  HoldingRegisters hregs_struct;
+  HoldingRegistersWrapper hregs_wrapper{&hregs_struct};
+  Modbus::MappedRegisterDataStore<HoldingRegistersWrapper> hregs{&hregs_wrapper};
+  InputRegisters inregs_struct;
+  InputRegistersWrapper inregs_wrapper{&inregs_struct};
+  Modbus::MappedRegisterDataStore<InputRegistersWrapper> inregs{&inregs_wrapper};
 
-  auto& inregs = input_register_data_store_;
-  auto& hregs = holding_register_data_store_;
   const char* dev_name = nullptr;
   uint8_t slave_address = 246;
   if(argc > 1) {
@@ -92,16 +91,15 @@ int main(int argc, char** argv) {
   printf("\n\nWriting/Reading Input Registers\n\n");
 
   
-printf("Reading version\n");
-void ReadWriteEntry(const std::size_t address_start, const std::size_t register_count)
-  uint16_t* data_buffer = new uint16_t[register_count];
+  printf("Reading version\n");
+  std::array<uint16_t, 32> read_buffer_version {};
   sleep(1);
-  modbus_read_input_registers(ctx, address_start, register_count, data_buffer);
-  uint8_t* u8_array = new uint8_t[register_count * sizeof(uint16_t)];
-  Modbus::MakeRegistersToBytes(ArrayView<uint8_t>(data_buffer, sizeof(data_buffer)/sizeof(data_buffer[0])),
-      ArrayView<uint8_t>(register_count * sizeof(uint16_t), u8array));
-  inregs.SetFieldFromAddress(address_start, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_version();
+  modbus_read_input_registers(ctx, 0, 32, read_buffer_version.data());
+  {
+  std::array<uint8_t, 32 * sizeof(uint16_t)> u8array{};
+  Modbus::MakeRegistersToBytes(read_buffer_version, ArrayView<uint8_t>(u8array.size(), u8array.data()));
+  inregs.SetFieldFromAddress(0, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
+  const auto value = inregs_wrapper.get_version();
   
   for (auto pt : value) {
     std::cout << pt << " ";
@@ -117,7 +115,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 32 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_firmware_version, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(32, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_firmware_version();
+  const auto value = inregs_wrapper.get_firmware_version();
   
   for (auto pt : value) {
     std::cout << pt << " ";
@@ -133,7 +131,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 32 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_compile_date, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(64, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_compile_date();
+  const auto value = inregs_wrapper.get_compile_date();
   
   for (auto pt : value) {
     std::cout << pt << " ";
@@ -149,7 +147,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 32 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_compile_time, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(96, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_compile_time();
+  const auto value = inregs_wrapper.get_compile_time();
   
   for (auto pt : value) {
     std::cout << pt << " ";
@@ -165,7 +163,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 20 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_serial_number, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(128, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_serial_number();
+  const auto value = inregs_wrapper.get_serial_number();
   
   for (auto pt : value) {
     std::cout << pt << " ";
@@ -181,7 +179,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 1 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_fault_status, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(148, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_fault_status();
+  const auto value = inregs_wrapper.get_fault_status();
   
   std::cout << value << "\n\n";
   
@@ -194,7 +192,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_p5_micro_volts, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(150, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_p5_micro_volts();
+  const auto value = inregs_wrapper.get_p5_micro_volts();
   
   std::cout << value << "\n\n";
   
@@ -207,7 +205,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_p5_reading, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(152, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_p5_reading();
+  const auto value = inregs_wrapper.get_p5_reading();
   
   std::cout << value << "\n\n";
   
@@ -220,7 +218,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_p23_micro_volts, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(154, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_p23_micro_volts();
+  const auto value = inregs_wrapper.get_p23_micro_volts();
   
   std::cout << value << "\n\n";
   
@@ -233,7 +231,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_p23_reading, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(156, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_p23_reading();
+  const auto value = inregs_wrapper.get_p23_reading();
   
   std::cout << value << "\n\n";
   
@@ -246,7 +244,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_vlo_micro_volts, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(158, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_vlo_micro_volts();
+  const auto value = inregs_wrapper.get_vlo_micro_volts();
   
   std::cout << value << "\n\n";
   
@@ -259,7 +257,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_vlo_reading, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(160, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_vlo_reading();
+  const auto value = inregs_wrapper.get_vlo_reading();
   
   std::cout << value << "\n\n";
   
@@ -272,7 +270,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_thermistor_temp_spi, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(162, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_thermistor_temp_spi();
+  const auto value = inregs_wrapper.get_thermistor_temp_spi();
   
   std::cout << value << "\n\n";
   
@@ -285,7 +283,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_thermistor_temp_mcu, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(164, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_thermistor_temp_mcu();
+  const auto value = inregs_wrapper.get_thermistor_temp_mcu();
   
   std::cout << value << "\n\n";
   
@@ -298,7 +296,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_data_frequency, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(166, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_data_frequency();
+  const auto value = inregs_wrapper.get_data_frequency();
   
   std::cout << value << "\n\n";
   
@@ -311,7 +309,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_p3_3_micro_volts, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(168, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_p3_3_micro_volts();
+  const auto value = inregs_wrapper.get_p3_3_micro_volts();
   
   std::cout << value << "\n\n";
   
@@ -324,7 +322,7 @@ void ReadWriteEntry(const std::size_t address_start, const std::size_t register_
   std::array<uint8_t, 2 * sizeof(uint16_t)> u8array{};
   Modbus::MakeRegistersToBytes(read_buffer_p3_3_reading, ArrayView<uint8_t>(u8array.size(), u8array.data()));
   inregs.SetFieldFromAddress(170, ArrayView<const uint8_t>(u8array.size(), u8array.data()));
-  const auto value = inregs.get_p3_3_reading();
+  const auto value = inregs_wrapper.get_p3_3_reading();
   
   std::cout << value << "\n\n";
   

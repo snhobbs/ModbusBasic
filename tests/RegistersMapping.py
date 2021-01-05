@@ -57,6 +57,6 @@ def GetHoldingRegisterMapEntries():
     return HoldingRegisterMapEntries
 
 if __name__ == "__main__":
-    modbus_generator.MakeHeader(GetHoldingRegisterMapEntries(), "TestHoldingRegisterMappedDataStore.h", namespace="HoldingRegisters")
-    modbus_generator.MakeHeader(GetInputRegisterMapEntries(), "TestInputRegisterMappedDataStore.h", namespace="InputRegisters")
+    modbus_generator.MakeHeader(GetHoldingRegisterMapEntries(), "TestHoldingRegisterMappedDataStore.h", name="HoldingRegisters")
+    modbus_generator.MakeHeader(GetInputRegisterMapEntries(), "TestInputRegisterMappedDataStore.h", name="InputRegisters")
 

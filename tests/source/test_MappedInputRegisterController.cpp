@@ -18,10 +18,10 @@
 #include <array>
 
 TEST(InputRegister, Instantiate) {
-  InputRegisters::MemoryMap input_map_;
-  InputRegisters::MemoryMapController input_map_controller_{&input_map_};
-  Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController> input_register_data_store_{&input_map_controller_};
-  Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisters::MemoryMapController>> input_controller{&input_register_data_store_};
+  InputRegisters input_map_;
+  InputRegistersWrapper input_map_controller_{&input_map_};
+  Modbus::MappedRegisterDataStore<InputRegistersWrapper> input_register_data_store_{&input_map_controller_};
+  Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegistersWrapper>> input_controller{&input_register_data_store_};
 }
 #if 0
   bool WriteLocationValid(std::size_t address, std::size_t count) {

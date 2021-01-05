@@ -3,7 +3,7 @@
 #include <ArrayView/ArrayView.h>
 #include <cstdint>
 
-#if 0
+#if 1
 #include <BitControl/BitField.h>
 #else
 #include <sprout/sprout/bitset/bitset.hpp>
@@ -49,7 +49,7 @@ class BitField {
           byte_value |= static_cast<uint8_t>(1 << byte_index);
         }
       }
-      *response_data->operator[](byte_number) = byte_value;
+      response_data->operator[](byte_number) = byte_value;
     }
   }
   void WriteMultipleElementsFromBytes(const uint16_t starting_address,
