@@ -100,8 +100,8 @@ target_include_directories(tests PUBLIC ${INCLUDE_DIR}/CppUtilities/include/spro
 target_include_directories(tests PUBLIC ${INCLUDE_DIR}/DataStores/include)
 
 if(RUN_ANALYSIS)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/StaticAnalysis.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Utilities.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeStaticAnalysis/StaticAnalysis.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeStaticAnalysis/Utilities.cmake)
 GetStaticAnalysisFiles(tests "${StaticExcludes}")
 message(STATUS "Analyze ${AnalyseFiles}")
 StaticAnalysis("${AnalyseFiles}")
