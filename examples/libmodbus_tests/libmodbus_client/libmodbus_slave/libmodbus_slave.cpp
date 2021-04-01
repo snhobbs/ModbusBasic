@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <cassert>
 #include <cstring>
+#include <iostream>
+
 int main(int argc, char* argv[]) {
   modbus_t *ctx = nullptr;
   if(argc < 2) {
@@ -25,7 +27,7 @@ int main(int argc, char* argv[]) {
   mapping->tab_registers[12] = 623;
 
   //Set the Modbus address of the remote slave
-  modbus_set_slave(ctx, DemoData::slave_address);
+  modbus_set_slave(ctx, 246);
 
   if (modbus_connect(ctx) == -1) {
     fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
@@ -34,8 +36,8 @@ int main(int argc, char* argv[]) {
   }
   fprintf(stdout, "Connection Successful\n");
 
-  uint8_t req[MODBUS_RTU_MAX_ADU_LENGTH];// request buffer
-  int len;// length of the request/response
+  uint8_t req[MODBUS_RTU_MAX_ADU_LENGTH]{};// request buffer
+  int len = 0;// length of the request/response
 
   printf("\n");
 
@@ -47,15 +49,21 @@ int main(int argc, char* argv[]) {
     if (len == -1) break;
 
     len = modbus_reply(ctx, req, len, mapping);
+    for (std::size_t i=0; i<len; i++){
+      std::cout << static_cast<int>(req[i]) << ", ";
+    }
+    std::cout << std::endl;
     if (len == -1) break;
 
-    if (loops%16 == 0) {
+#if 0
+  if (loops%16 == 0) {
       printf("%d \n[ ", mapping->nb_registers);
         for (std::size_t i = 0; i < 256; i++) {
           printf(" 0x%x", static_cast<uint16_t>(mapping->tab_registers[i]));
         }
       printf(" ]\n ");
     }
+#endif
   }
   printf("Exit the loop: %s\n", modbus_strerror(errno));
 

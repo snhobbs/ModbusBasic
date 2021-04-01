@@ -13,3 +13,6 @@
 [submodule "include/CppUtilities"]
 	path = include/CppUtilities
 	url = git@github.com:snhobbs/CppUtilities.git
+[submodule "include/HardwareInterfaces"]
+	path = include/HardwareInterfaces
+	url = git@github.com:snhobbs/BareMetalHardwareAbstraction.git

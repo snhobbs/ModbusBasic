@@ -147,7 +147,7 @@ def run_async_server():
 
     # RTU Server
     StartSerialServer(context, identity=identity,
-                      port='/tmp/ttyp0', framer=ModbusRtuFramer)
+                      port='/dev/ttyUSB0', framer=ModbusRtuFramer, baud=9600)
 
     # ASCII Server
     # StartSerialServer(context, identity=identity,

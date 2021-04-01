@@ -107,8 +107,7 @@ class LinuxSlave : public SlaveBase {
 
  public:
   void Run(void) {
-    // sleep(0.005);
-
+    //sleep(0.005);
     iodev_.SendTxBuff();
     iodev_.ReadIntoRxBuff();
 
