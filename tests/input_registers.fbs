@@ -1,4 +1,4 @@
-namespace Modbus.HoldingRegisters;
+namespace Modbus.InputRegisters;
 
 struct Registers {
   array:[uint8:64];
