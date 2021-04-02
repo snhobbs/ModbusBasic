@@ -35,6 +35,12 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: sudo apt-get install googletest && cd /usr/src/googletest && sudo cmake ./ && sudo make && sudo make install
       
+    - name: SetupFlatBuffers
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      # Execute the build.  You can specify a specific target with "--target <NAME>"
+      run: cd include/flatbuffers && cmake ./ && make flatc 
+
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
