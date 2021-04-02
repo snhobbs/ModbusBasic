@@ -52,11 +52,11 @@ class FlatBufferRegisterStore : public DataStore {
   }
 
   void read(const size_t byte_address, const size_t count, uint8_t* data) const {
-    memcpy(reinterpret_cast<const uint8_t*>(&obj_)+byte_address, data, count);
+    memcpy(data, reinterpret_cast<const uint8_t*>(&obj_)+byte_address, count);
   }
 
   void write(const size_t byte_address, const size_t count, const uint8_t* data) {
-    memcpy(data, reinterpret_cast<uint8_t*>(&obj_)+byte_address, count);
+    memcpy(reinterpret_cast<uint8_t*>(&obj_)+byte_address, data, count);
   }
 };
 
