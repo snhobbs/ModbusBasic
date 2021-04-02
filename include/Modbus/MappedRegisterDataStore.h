@@ -56,12 +56,17 @@ public:
     return value;
   }
 
+  //  [[deprecated]]
   template<typename F>
-  void GetRegisters(std::size_t address, std::size_t register_count, F* data) const {
+  void GetRegisters(const size_t address, const size_t register_count, F* data) const {
+    GetRegisters(address, register_count, data->data(), data->size());
+  }
+
+  void GetRegisters(const size_t address, const size_t register_count, uint8_t* data, const size_t length) const {
     const auto byte_address = sizeof(uint16_t)*address;
     const auto byte_count = sizeof(uint16_t)*register_count;
-    if (RegisterSpanValid(address, register_count) && byte_count <= data->size()) {
-      read(byte_address, byte_count, data->data());
+    if (RegisterSpanValid(address, register_count) && byte_count <= length) {
+      read(byte_address, byte_count, data);
     } else {
       assert(0);
     }
@@ -69,16 +74,21 @@ public:
 
   void SetRegister(std::size_t address, const uint16_t value) {
     std::array<uint8_t, sizeof(uint16_t)> data{0xFF&(value >> 8), 0xFF&value};
-    SetRegisters(address, 1, data);
+    SetRegisters(address, 1, data.data(), data.size());
   }
 
   //  Validation has made each one of the a complete entry to one of our values
+  //[[deprecated]]
   template<typename F>
-  void SetRegisters(std::size_t address, std::size_t register_count, F &data) {
+  void SetRegisters(const size_t address, const size_t register_count, F &data) {
+    SetRegisters(address, register_count, data.data(), data.size());
+  }
+
+  void SetRegisters(const size_t address, const size_t register_count, const uint8_t* data, const size_t length) {
     const auto byte_address = sizeof(uint16_t)*address;
     const auto byte_count = sizeof(uint16_t)*register_count;
-    if (RegisterSpanValid(address, register_count) && byte_count <= data.size()) {
-      write(byte_address, byte_count, data.data());
+    if (RegisterSpanValid(address, register_count) && byte_count <= length) {
+      write(byte_address, byte_count, data);
     } else {
       assert(0);
     }

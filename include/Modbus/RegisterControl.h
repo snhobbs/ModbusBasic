@@ -296,7 +296,6 @@ class HoldingRegisterController {
   T* GetDataStore(void) {
     return register_data_;
   }
-  [[deprecated]]
   bool RegisterSpanValid(std::size_t address, std::size_t count) const {
     return register_data_->RegisterSpanValid(address, count);
   }
