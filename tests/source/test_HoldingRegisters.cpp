@@ -13,6 +13,7 @@
 #include <Modbus/Modbus.h>
 #include <Modbus/RegisterControl.h>
 #include <Modbus/DataStore.h>
+#include <Modbus/MappedRegisterDataStore.h>
 //#include <Modbus/ModbusRtu/ModbusRtu.h>
 #include <ArrayView/ArrayView.h>
 #include <gtest/gtest.h>
@@ -23,16 +24,17 @@
 #include <cstdint>
 
 namespace ModbusTests {
-static const constexpr std::size_t kRegisters = 69;
+const constexpr std::size_t kRegisters = 69;
 
 struct HoldingRegisterDataFixture : public ::testing::Test {
-  Modbus::RegisterDataStore<kRegisters> dc{};
+  Modbus::RegisterDataStore<kRegisters> map_{};
+  Modbus::MappedRegisterDataStore<Modbus::RegisterDataStore<kRegisters>> dc{&map_};
   void SetUp(void) {}
   void TearDown(void) {}
 };
 TEST_F(HoldingRegisterDataFixture, RegisterReadWrite) {
   for (std::size_t i = 0; i < dc.GetSize(); i++) {
-    std::size_t address = dc.GetAddressStart() + 1;
+    std::size_t address = dc.GetAddressStart() + i;
     const uint16_t data = 0x00aa;  // 0xaa00;
     dc.SetRegister(address, data);
     EXPECT_EQ(dc.GetRegister(address), data);
@@ -40,14 +42,15 @@ TEST_F(HoldingRegisterDataFixture, RegisterReadWrite) {
 }
 
 struct HoldingRegisterControllerFixture : public ::testing::Test {
-  Modbus::RegisterDataStore<kRegisters> dc{};
+  Modbus::RegisterDataStore<kRegisters> map_;
+  Modbus::MappedRegisterDataStore<Modbus::RegisterDataStore<kRegisters>> dc{&map_};
   Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
 };
 
 TEST_F(HoldingRegisterControllerFixture, AddressValid) {
-  EXPECT_TRUE(cc.ReadLocationValid(0, kRegisters));
-  EXPECT_TRUE(!cc.ReadLocationValid(1, kRegisters));
-  EXPECT_TRUE(!cc.ReadLocationValid(0, kRegisters + 1));
+  EXPECT_TRUE(cc.RegisterSpanValid(0, kRegisters));
+  EXPECT_FALSE(cc.RegisterSpanValid(1, kRegisters));
+  EXPECT_FALSE(cc.RegisterSpanValid(0, kRegisters + 1));
 }
 
 TEST_F(HoldingRegisterControllerFixture, RegisterReadWrite) {
@@ -56,7 +59,7 @@ TEST_F(HoldingRegisterControllerFixture, RegisterReadWrite) {
     cc.WriteRegister(address, data);
     const uint16_t reading = cc.ReadRegister(address);
     EXPECT_EQ(data, reading);
-    EXPECT_TRUE(cc.ReadLocationValid(address, 1));
+    EXPECT_TRUE(cc.RegisterSpanValid(address, 1));
   }
 }
 TEST_F(HoldingRegisterControllerFixture, RegisterReadWriteAddress) {
@@ -72,7 +75,8 @@ TEST_F(HoldingRegisterControllerFixture, RegisterReadWriteAddress) {
 }
 
 struct ValidateHoldingRegisterFramesFixture: public ::testing::Test {
-  Modbus::RegisterDataStore<kRegisters> dc{};
+  Modbus::RegisterDataStore<kRegisters> map_{};
+  Modbus::MappedRegisterDataStore<Modbus::RegisterDataStore<kRegisters>> dc{&map_};
   Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
   std::array<uint8_t, 64> buffer;
   ArrayView<uint8_t> frame_data{buffer.size(), buffer.data()};

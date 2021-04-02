@@ -66,6 +66,7 @@ class BitFieldDataStore : public DataStore {
   }
 };
 
+
 template <std::size_t kSize, typename T = uint16_t>
 class RegisterDataStore : public DataStore {
   std::array<T, kSize> data_store_{};
@@ -73,42 +74,44 @@ class RegisterDataStore : public DataStore {
 
  public:
   RegisterDataStore() {}
-  static constexpr bool ReadLocationValid(std::size_t address, std::size_t count) {
-    return IsAddressValid(address) && IsAddressValid(address + count -1);
-  }
-  static constexpr bool WriteLocationValid(std::size_t address, std::size_t count) {
-    return ReadLocationValid(address, count);
-  }
-  static constexpr bool IsAddressValid(std::size_t address) {
-    return address + 1 <= GetAddressStart() + GetSize();
-  }
+  static const size_t number_of_fields = kSize;
   static std::size_t size(void) {return GetSize();}
   static constexpr std::size_t GetSize(void) { return kSize; }
   static constexpr std::size_t GetRegisterByteSize(void) { return sizeof(T); }
-  T GetRegister(std::size_t address) const {
-    return data_store_[GetIndex(address)];
+
+  static size_t get_field_size(const size_t index) {
+    return sizeof(T);
   }
 
-  void GetRegisters(const std::size_t address, const std::size_t register_count, ArrayView<uint8_t>* data_view) const {
-    const std::size_t num_data_bytes = register_count * sizeof(uint16_t);
-    std::size_t register_index = address;
-    for (std::size_t byte_number = 0; byte_number < num_data_bytes;) {
-      const uint16_t state = GetRegister(register_index++);
-      data_view->operator[](byte_number++) = Utilities::GetByte(state, 1);
-      data_view->operator[](byte_number++) = Utilities::GetByte(state, 0);
+  static size_t get_offset(const size_t index) {
+    return index*sizeof(T);
+  }
+
+  bool ReadLocationValid(std::size_t byte_address, std::size_t byte_count) const {
+    return WriteLocationValid(byte_address, byte_count);
+  }
+
+  bool WriteLocationValid(std::size_t byte_address, std::size_t byte_count) const {
+    const bool valid = byte_address < size()*sizeof(T) && byte_count <= size()*sizeof(T)-byte_address;
+    return valid;
+  }
+
+  void read(const size_t byte_address, const size_t count, uint8_t* data) const {
+    const size_t register_count = count/sizeof(uint16_t);
+    const size_t register_address = byte_address/sizeof(uint16_t);
+    for (std::size_t index = 0; index < register_count; index++) {
+      const uint16_t state = data_store_[register_address+index];
+      data[index*sizeof(uint16_t)] = 0xFF&(state >> 8);
+      data[index*sizeof(uint16_t)+1] = 0xFF&(state);
     }
   }
 
-  void SetRegister(std::size_t address, T value) {
-    data_store_[GetIndex(address)] = value;
-  }
-
-  void SetRegisters(std::size_t address, std::size_t register_count, const ArrayView<const uint8_t>& data_view) {
+  void write(const size_t byte_address, const size_t count, const uint8_t* data) {
+    const size_t register_count = count/sizeof(uint16_t);
+    const size_t register_address = byte_address/sizeof(uint16_t);
     for (std::size_t index = 0; index < register_count; index++) {
-      const std::size_t byte_index = index*sizeof(uint16_t);
-      const ArrayView<const uint8_t> uint16_data_view{sizeof(uint16_t), &data_view[byte_index]};
-      const uint16_t value = Utilities::Make_MSB_uint16_tFromU8Array(uint16_data_view);
-      SetRegister(address + index, value);
+      const uint16_t state = static_cast<uint16_t>(data[index*sizeof(uint16_t)]) << 8 | data[index*sizeof(uint16_t)+1];
+      data_store_[index+register_address] = state;
     }
   }
 };

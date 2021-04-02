@@ -13,6 +13,7 @@
 #include <ArrayView/ArrayView.h>
 #include <Modbus/Modbus.h>
 #include <Modbus/DataStore.h>
+#include <Modbus/MappedRegisterDataStore.h>
 #include <Modbus/RegisterControl.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <gtest/gtest.h>
@@ -36,13 +37,15 @@ struct RtuSlaveFixture : public ::testing::Test {
   using DiscreteController = Modbus::DiscreteInputController<Modbus::BitFieldDataStore<coil_count>>;
   DiscreteController discrete_input_controller;
 
-  using HoldingController = Modbus::HoldingRegisterController<Modbus::RegisterDataStore<holding_register_count>>;
+  using HoldingController = Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<Modbus::RegisterDataStore<holding_register_count>>>;
   Modbus::RegisterDataStore<holding_register_count> holding_map;
-  HoldingController holding_register_controller{&holding_map};
+  Modbus::MappedRegisterDataStore<typeof(holding_map)> mapped_holding_store{&input_map};
+  HoldingController holding_register_controller{&mapped_holding_store};
 
-  using InputController = Modbus::InputRegisterController<Modbus::RegisterDataStore<holding_register_count>>;
+  using InputController = Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<Modbus::RegisterDataStore<holding_register_count>>>;
   Modbus::RegisterDataStore<holding_register_count> input_map;
-  InputController input_register_controller{&input_map};
+  Modbus::MappedRegisterDataStore<typeof(input_map)> mapped_input_store{&input_map};
+  InputController input_register_controller{&mapped_input_store};
 
   Modbus::ProtocolRtuSlave<CoilController, HoldingController, DiscreteController, InputController> slave{&crc16,
             kSlaveAddress,

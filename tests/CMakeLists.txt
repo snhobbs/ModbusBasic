@@ -1,9 +1,29 @@
 cmake_minimum_required(VERSION 3.15.0)
 
-project(tests)
-add_executable(tests)
+set(TargetName modbus_basic_tests)
+project(${TargetName})
 
-target_include_directories(tests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include")
+add_executable(${TargetName})
+
+function(Generate name)
+  set(source_name "${name}_generated.h")
+  set_source_files_properties(${source_name} GENERATED)
+  target_sources(${TargetName} PUBLIC ${source_name})
+  add_custom_command(
+    COMMENT "Generating source ${name}"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS "${name}.fbs"
+    OUTPUT "${name}_generated.h"
+    COMMAND flatc --cpp --grpc --cpp-std=c++17 --cpp-ptr-type naked --gen-mutable --scoped-enums --gen-name-strings --cpp-static-reflection --gen-object-api
+    ARGS  ${name}.fbs
+    )
+endfunction()
+
+Generate("input_registers")
+Generate("holding_registers")
+
+
+target_include_directories(${TargetName} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include")
 
 #SET(CMAKE_CXX_COMPILER clang++-9)
 SET(CMAKE_CXX_COMPILER /usr/bin/g++-8)
@@ -11,20 +31,20 @@ option(RUN_SANITIZER ON)
 
 if(${RUN_SANITIZER})
 target_compile_options(
-tests
+${TargetName}
 PRIVATE
     -fsanitize=address
     -fno-omit-frame-pointer
     -fsanitize=undefined)
 
-target_link_libraries( tests asan)
-#target_link_libraries( tests tsan)
-target_link_libraries( tests ubsan)
-#target_link_libraries( tests msan)
+target_link_libraries( ${TargetName} asan)
+#target_link_libraries( ${TargetName} tsan)
+target_link_libraries( ${TargetName} ubsan)
+#target_link_libraries( ${TargetName} msan)
 endif()
 
 target_compile_options(
-tests
+${TargetName}
 PRIVATE
     -Wall
     -Wextra
@@ -54,16 +74,16 @@ PRIVATE
     -Wshadow
 )
 
-target_compile_features(tests PUBLIC cxx_std_17)
-target_compile_definitions(tests PRIVATE TESTING)
-target_compile_definitions(tests PRIVATE UNITTESTING)
-target_compile_definitions(tests PRIVATE LINUX)
-set_property(TARGET tests PROPERTY CXX_STANDARD 17)
+target_compile_features(${TargetName} PUBLIC cxx_std_17)
+target_compile_definitions(${TargetName} PRIVATE TESTING)
+target_compile_definitions(${TargetName} PRIVATE UNITTESTING)
+target_compile_definitions(${TargetName} PRIVATE LINUX)
+set_property(TARGET ${TargetName} PROPERTY CXX_STANDARD 17)
 #add_definitions(-D__CORE_CMINSTR_H)
 #add_definitions(-D__CORE_CMINSTR_H)
 #add_definitions(-D__GNUC__)
 
-#target_compile_options(tests PRIVATE -fpermissive)
+#target_compile_options(${TargetName} PRIVATE -fpermissive)
 #target_compile_options(-fprofile-arcs -ftest-coverage)
 
 #SET(GCC_COVERAGE_LINK_FLAGS    "-coverage -lgcov")
@@ -76,8 +96,8 @@ SET(CMAKE_VERBOSE_MAKEFILE ON)
 set(TestSource ${CMAKE_CURRENT_SOURCE_DIR}/source)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/source sources)
 
-target_sources(tests PUBLIC ${sources})
-target_sources(tests PUBLIC ${TestSource}/main.cpp)
+target_sources(${TargetName} PUBLIC ${sources})
+target_sources(${TargetName} PUBLIC ${TestSource}/main.cpp)
 
 
 #find_library(GTEST_LIB NAMES gtest)
@@ -87,24 +107,26 @@ message("GTEST: ${GTEST_LIB}")
 
 find_library(PTHREAD_LIB pthread)
 message("PTHREAD: ${PTHREAD_LIB}")
-target_link_libraries(tests ${GTEST_LIB})
-#target_link_libraries(tests gtest)
-target_link_libraries(tests ${PTHREAD_LIB})
+target_link_libraries(${TargetName} ${GTEST_LIB})
+#target_link_libraries(${TargetName} gtest)
+target_link_libraries(${TargetName} ${PTHREAD_LIB})
 
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
-include_directories(tests PUBLIC ${INCLUDE_DIR})
-target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
-include_directories(tests PUBLIC ${INCLUDE_DIR}/CppUtilities/include)
-target_include_directories(tests PUBLIC ${INCLUDE_DIR}/CppUtilities/include/sprout)
-target_include_directories(tests PUBLIC ${INCLUDE_DIR}/DataStores/include)
+include_directories(${TargetName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${TargetName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
+include_directories(${TargetName} PUBLIC ${INCLUDE_DIR})
+target_include_directories(${TargetName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
+include_directories(${TargetName} PUBLIC ${INCLUDE_DIR}/CppUtilities/include)
+target_include_directories(${TargetName} PUBLIC ${INCLUDE_DIR}/CppUtilities/include/sprout)
+target_include_directories(${TargetName} PUBLIC ${INCLUDE_DIR}/DataStores/include)
+target_include_directories(${TargetName} PUBLIC /home/simon/software/flatbuffers/include)
 
 if(RUN_ANALYSIS)
   include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeStaticAnalysis/StaticAnalysis.cmake)
   include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeStaticAnalysis/Utilities.cmake)
-GetStaticAnalysisFiles(tests "${StaticExcludes}")
+GetStaticAnalysisFiles(${TargetName} "${StaticExcludes}")
 message(STATUS "Analyze ${AnalyseFiles}")
 StaticAnalysis("${AnalyseFiles}")
 endif()
 
-add_test(NAME tests COMMAND tests)
+add_test(NAME ${TargetName} COMMAND ${TargetName})

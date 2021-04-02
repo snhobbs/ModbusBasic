@@ -259,7 +259,7 @@ class HoldingRegisterController {
       const ArrayView<uint8_t> &data_array) const {
     const std::size_t address =
         WriteSingleHoldingRegisterCommand::ReadAddressStart(data_array);
-    if (!WriteLocationValid(address, 1)) {
+    if (!register_data_->RegisterSpanValid(address, 1)) {
       return Exception::kIllegalDataAddress;
     }
     return Exception::kAck;
@@ -270,7 +270,7 @@ class HoldingRegisterController {
         ReadMultipleHoldingRegistersCommand::ReadAddressStart(data_array);
     const std::size_t register_count =
         ReadMultipleHoldingRegistersCommand::ReadRegisterCount(data_array);
-    if (!ReadLocationValid(address, register_count)) {
+    if (!register_data_->RegisterSpanValid(address, register_count)) {
       return Exception::kIllegalDataAddress;
     }
     return Exception::kAck;
@@ -283,7 +283,7 @@ class HoldingRegisterController {
           WriteMultipleHoldingRegistersCommand::ReadDataByteCount(data_array);
     const std::size_t address =
         WriteMultipleHoldingRegistersCommand::ReadAddressStart(data_array);
-    if (!WriteLocationValid(address, register_count)) {
+    if (!register_data_->RegisterSpanValid(address, register_count)) {
       return Exception::kIllegalDataAddress;
     } else if (register_count * sizeof(uint16_t) != num_data_bytes) {
       return Exception::kIllegalDataValue;
@@ -296,11 +296,9 @@ class HoldingRegisterController {
   T* GetDataStore(void) {
     return register_data_;
   }
-  bool WriteLocationValid(std::size_t address, std::size_t count) const {
-    return register_data_->WriteLocationValid(address, count);
-  }
-  bool ReadLocationValid(std::size_t address, std::size_t count) const {
-    return register_data_->ReadLocationValid(address, count);
+  [[deprecated]]
+  bool RegisterSpanValid(std::size_t address, std::size_t count) const {
+    return register_data_->RegisterSpanValid(address, count);
   }
   uint16_t ReadRegister(uint16_t address) const {
     return register_data_->GetRegister(address);
@@ -368,11 +366,11 @@ class HoldingRegisterController {
   void ReadRegisters(const uint16_t starting_address,
                      const uint16_t register_count,
                      ArrayView<uint8_t> *response_data) {
-    if (!ReadLocationValid(starting_address, register_count)) {
+    if (RegisterSpanValid(starting_address, register_count)) {
+      register_data_->GetRegisters(starting_address, register_count, response_data);
+    } else {
       assert(0);
-      return;
     }
-    register_data_->GetRegisters(starting_address, register_count, response_data);
   }
 
   Exception ValidateFrame(const Frame &frame) const {
@@ -402,7 +400,7 @@ class InputRegisterController {
         ReadInputRegistersCommand::ReadAddressStart(data_array);
     const std::size_t register_count =
         ReadInputRegistersCommand::ReadRegisterCount(data_array);
-    if (!ReadLocationValid(address, register_count)) {
+    if (!register_data_->RegisterSpanValid(address, register_count)) {
         return Exception::kIllegalDataAddress;
     }
     return Exception::kAck;
@@ -413,8 +411,8 @@ class InputRegisterController {
   T* GetDataStore(void) {
     return & register_data_;
   }
-  bool ReadLocationValid(std::size_t address, std::size_t count) const {
-    return register_data_->ReadLocationValid(address, count);
+  bool RegisterSpanValid(std::size_t address, std::size_t count) const {
+    return register_data_->RegisterSpanValid(address, count);
   }
   uint16_t ReadRegister(uint16_t address) const {
     return register_data_->GetRegister(address);
@@ -454,7 +452,7 @@ class InputRegisterController {
   void ReadRegisters(const uint16_t starting_address,
                      const uint16_t register_count,
                      ArrayView<uint8_t> *response_data) {
-    if (!ReadLocationValid(starting_address, register_count)) {
+    if (!register_data_->RegisterSpanValid(starting_address, register_count)) {
       assert(0);
       return;
     }
