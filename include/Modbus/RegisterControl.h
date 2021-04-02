@@ -294,6 +294,12 @@ class HoldingRegisterController {
 
  public:
   explicit HoldingRegisterController(T* data) : register_data_{data} {}
+  void SetNewData(const bool setting) {
+    return register_data_.SetNewData(setting);
+  }
+  bool IsNewData(void) const {
+    return register_data_.IsNewData();
+  }
   bool RegisterSpanValid(std::size_t address, std::size_t count) const {
     return register_data_.RegisterSpanValid(address, count);
   }
