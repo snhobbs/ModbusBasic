@@ -19,7 +19,8 @@
 #include <vector>
 
 TEST(FlatBuffersRegisterInput, Constuct) {
-  Modbus::FlatBufferRegisterStore<Modbus::InputRegisters::Registers> input_map_{};
+  Modbus::InputRegisters::Registers regs;
+  Modbus::FlatBufferRegisterStore<Modbus::InputRegisters::Registers> input_map_{&regs};
   Modbus::MappedRegisterDataStore<typeof(input_map_)> input_register_data_store_{&input_map_};
 }
 

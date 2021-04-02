@@ -9,27 +9,27 @@
 namespace Modbus {
 template <typename T>
 class FlatBufferRegisterStore : public DataStore {
-  T obj_{};
+  T* obj_;
 
  public:
-  FlatBufferRegisterStore() {}
-  static const size_t number_of_fields = T::Traits::fields_number;
+  explicit FlatBufferRegisterStore(T* obj): obj_{obj} {}
+  static const size_t number_of_fields = 4;//T::Traits::fields_number;
   static std::size_t size(void) {return GetSize();}
   static constexpr std::size_t GetSize(void) { return sizeof(T); }
   static constexpr std::size_t GetRegisterByteSize(void) { return sizeof(uint16_t); }
 
   //  FIXME This will cause the padding to be readable and writable
   size_t get_field_size(const size_t index) const {
-    const size_t offset = obj_.get_offset(index);
+    const size_t offset = obj_->get_offset(index);
     if (index >= number_of_fields-1) {
       return sizeof(T) - offset;
     } else {
-      return obj_.get_offset(index+1) - offset;
+      return obj_->get_offset(index+1) - offset;
     }
   }
 
   size_t get_offset(const size_t index) const {
-    return obj_.get_offset(index);
+    return obj_->get_offset(index);
   }
 
   std::size_t GetMemoryMapEntryIndex(std::size_t byte_address) const {

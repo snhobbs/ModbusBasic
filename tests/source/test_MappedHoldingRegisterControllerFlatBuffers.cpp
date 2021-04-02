@@ -19,7 +19,8 @@
 #include <vector>
 
 TEST(FlatBuffersRegister, Constuct) {
-  Modbus::FlatBufferRegisterStore<Modbus::HoldingRegisters::Registers> holding_map_{};
+  Modbus::HoldingRegisters::Registers holding_regs_{};
+  Modbus::FlatBufferRegisterStore<Modbus::HoldingRegisters::Registers> holding_map_{&holding_regs_};
   Modbus::MappedRegisterDataStore<typeof(holding_map_)> holding_register_data_store_{&holding_map_};
 }
 
