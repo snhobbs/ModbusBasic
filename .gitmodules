@@ -7,15 +7,12 @@
 [submodule "examples/pymodbus_tests/pymodbus"]
 	path = examples/pymodbus_tests/pymodbus
 	url = git@github.com:riptideio/pymodbus.git
-[submodule "libs/DataStores"]
-	path = include/DataStores
-	url = git@github.com:snhobbs/DataStores.git
 [submodule "include/CppUtilities"]
 	path = include/CppUtilities
 	url = git@github.com:snhobbs/CppUtilities.git
-[submodule "include/HardwareInterfaces"]
-	path = include/HardwareInterfaces
-	url = git@github.com:snhobbs/BareMetalHardwareAbstraction.git
 [submodule "tests/cmake/CMakeStaticAnalysis"]
 	path = tests/CMakeStaticAnalysis
 	url = git@github.com:snhobbs/CMakeStaticAnalysis.git
+[submodule "include/flatbuffers"]
+	path = include/flatbuffers
+	url = git@github.com:snhobbs/flatbuffers.git

@@ -9,6 +9,7 @@
  * ----------------------------------------------------------------------
  */
 
+#if 0
 #include "TestHoldingRegisterMappedDataStore.h"
 #include <Modbus/MappedRegisterDataStore.h>
 #include <gtest/gtest.h>
@@ -64,3 +65,4 @@ TEST(DataMapTest, Serialize) {
 }
 
 }  // namespace TestsMappedRegisterDataStore
+#endif

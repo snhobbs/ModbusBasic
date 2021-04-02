@@ -1,0 +1,12 @@
+
+struct InputRegisters {
+  string_0: [uint8:64];
+  string_1: [uint8:64];
+  string_2: [uint8:64];
+  string_3: [uint8:40];
+  u16_0: uint16;
+  u16_1: uint16;
+  u16_2: uint16;
+  i32_0: int32;
+  u32_0: uint32;
+}

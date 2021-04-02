@@ -27,12 +27,12 @@ using DiscreteInputController =
 using HoldingRegisters = Modbus::HoldingRegisters::Registers;
 using HoldingRegisterMemoryMap = Modbus::FlatBufferRegisterStore<HoldingRegisters>;
 using HoldingRegisterController =
-    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegisterMemoryMap>>;
+    Modbus::HoldingRegisterController<HoldingRegisterMemoryMap>;
 
 using InputRegisters = Modbus::InputRegisters::Registers;
 using InputRegisterMemoryMap = Modbus::FlatBufferRegisterStore<InputRegisters>;
 using InputRegisterController =
-    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegisterMemoryMap>>;
+    Modbus::InputRegisterController<InputRegisterMemoryMap>;
 using SlaveBase =
     Modbus::ProtocolRtuSlave<CoilController, HoldingRegisterController,
                              DiscreteInputController, InputRegisterController>;
@@ -77,7 +77,7 @@ struct InputRegisterFlatBuffersDataFixture : public ::testing::Test {
   InputRegisters input_registers{};
   InputRegisterMemoryMap input_register_data_map{&input_registers};
   Modbus::MappedRegisterDataStore<InputRegisterMemoryMap> dc{&input_register_data_map};
-  Modbus::InputRegisterController<typeof(dc)> cc{&dc};
+  Modbus::InputRegisterController<typeof(input_register_data_map)> cc{&input_register_data_map};
 
   void SetUp(void) {}
   void TearDown(void) {}
@@ -89,7 +89,7 @@ struct HoldingRegisterFlatBuffersDataFixture : public ::testing::Test {
   HoldingRegisters holding_registers{};
   HoldingRegisterMemoryMap holding_register_data_map{&holding_registers};
   Modbus::MappedRegisterDataStore<HoldingRegisterMemoryMap> dc{&holding_register_data_map};
-  Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
+  Modbus::HoldingRegisterController<typeof(holding_register_data_map)> cc{&holding_register_data_map};
   void SetUp(void) {}
   void TearDown(void) {}
 };

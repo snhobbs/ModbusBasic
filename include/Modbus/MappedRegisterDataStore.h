@@ -98,7 +98,7 @@ public:
     return ReadLocationValid(sizeof(uint16_t)*address, sizeof(uint16_t)*count);
   }
 
- private:
+ //private:
   bool ReadLocationValid(std::size_t byte_address, std::size_t byte_count) const {
 	return memory_controller_->ReadLocationValid(byte_address, byte_count);
   }

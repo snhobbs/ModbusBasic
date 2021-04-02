@@ -26,7 +26,7 @@ Generate("holding_registers")
 target_include_directories(${TargetName} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include")
 
 #SET(CMAKE_CXX_COMPILER clang++-9)
-SET(CMAKE_CXX_COMPILER /usr/bin/g++-8)
+#SET(CMAKE_CXX_COMPILER /usr/bin/g++-8)
 option(RUN_SANITIZER ON)
 
 if(${RUN_SANITIZER})
