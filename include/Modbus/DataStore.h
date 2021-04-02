@@ -66,7 +66,10 @@ class BitFieldDataStore : public DataStore {
   }
 };
 
-
+/*
+ * Basic register data store has each register as an entry, all in range
+ * accesses are legal
+ * */
 template <std::size_t kSize, typename T = uint16_t>
 class RegisterDataStore : public DataStore {
   std::array<T, kSize> data_store_{};

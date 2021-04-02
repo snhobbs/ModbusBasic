@@ -16,6 +16,7 @@
 #pragma once
 #include <Modbus/Modbus.h>
 #include <Modbus/DataCommand.h>
+#include <Modbus/MappedRegisterDataStore.h>
 
 namespace Modbus {
 class RegisterCommand : public DataCommand {};
@@ -253,13 +254,13 @@ class WriteMultipleHoldingRegistersCommand : public RegisterCommand {
 
 template <typename T>
 class HoldingRegisterController {
-  T* register_data_;
+  MappedRegisterDataStore<T> register_data_;
 
   Exception ValidateWriteSingleHoldingRegister(
       const ArrayView<uint8_t> &data_array) const {
     const std::size_t address =
         WriteSingleHoldingRegisterCommand::ReadAddressStart(data_array);
-    if (!register_data_->RegisterSpanValid(address, 1)) {
+    if (!register_data_.RegisterSpanValid(address, 1)) {
       return Exception::kIllegalDataAddress;
     }
     return Exception::kAck;
@@ -270,7 +271,7 @@ class HoldingRegisterController {
         ReadMultipleHoldingRegistersCommand::ReadAddressStart(data_array);
     const std::size_t register_count =
         ReadMultipleHoldingRegistersCommand::ReadRegisterCount(data_array);
-    if (!register_data_->RegisterSpanValid(address, register_count)) {
+    if (!register_data_.RegisterSpanValid(address, register_count)) {
       return Exception::kIllegalDataAddress;
     }
     return Exception::kAck;
@@ -283,7 +284,7 @@ class HoldingRegisterController {
           WriteMultipleHoldingRegistersCommand::ReadDataByteCount(data_array);
     const std::size_t address =
         WriteMultipleHoldingRegistersCommand::ReadAddressStart(data_array);
-    if (!register_data_->RegisterSpanValid(address, register_count)) {
+    if (!register_data_.RegisterSpanValid(address, register_count)) {
       return Exception::kIllegalDataAddress;
     } else if (register_count * sizeof(uint16_t) != num_data_bytes) {
       return Exception::kIllegalDataValue;
@@ -292,18 +293,15 @@ class HoldingRegisterController {
   }
 
  public:
-  explicit HoldingRegisterController(T* register_data) : register_data_{register_data} {}
-  T* GetDataStore(void) {
-    return register_data_;
-  }
+  explicit HoldingRegisterController(T* data) : register_data_{data} {}
   bool RegisterSpanValid(std::size_t address, std::size_t count) const {
-    return register_data_->RegisterSpanValid(address, count);
+    return register_data_.RegisterSpanValid(address, count);
   }
   uint16_t ReadRegister(uint16_t address) const {
-    return register_data_->GetRegister(address);
+    return register_data_.GetRegister(address);
   }
   void WriteRegister(uint16_t address, uint16_t value) {
-    register_data_->SetRegister(address, value);
+    register_data_.SetRegister(address, value);
   }
   int32_t ReadFrame(const Frame &frame, Response *response) {
       if (frame.function == Function::kWriteSingleHoldingRegister) {
@@ -358,7 +356,7 @@ class HoldingRegisterController {
 
     const ArrayView<const uint8_t> data_view{register_count*sizeof(uint16_t), 
       &frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::kValueStart]};
-    register_data_->SetRegisters(address, register_count, data_view);
+    register_data_.SetRegisters(address, register_count, data_view);
     return 0;
   }
 
@@ -366,7 +364,7 @@ class HoldingRegisterController {
                      const uint16_t register_count,
                      ArrayView<uint8_t> *response_data) {
     if (RegisterSpanValid(starting_address, register_count)) {
-      register_data_->GetRegisters(starting_address, register_count, response_data);
+      register_data_.GetRegisters(starting_address, register_count, response_data);
     } else {
       assert(0);
     }
@@ -391,7 +389,7 @@ class HoldingRegisterController {
 
 template <typename T>
 class InputRegisterController {
-  T* register_data_;
+  MappedRegisterDataStore<T> register_data_;
 
   Exception ValidateReadRegisters(
       const ArrayView<uint8_t> &data_array) const {
@@ -399,25 +397,22 @@ class InputRegisterController {
         ReadInputRegistersCommand::ReadAddressStart(data_array);
     const std::size_t register_count =
         ReadInputRegistersCommand::ReadRegisterCount(data_array);
-    if (!register_data_->RegisterSpanValid(address, register_count)) {
+    if (!register_data_.RegisterSpanValid(address, register_count)) {
         return Exception::kIllegalDataAddress;
     }
     return Exception::kAck;
   }
 
  public:
-  explicit InputRegisterController(T* register_data) : register_data_{register_data} {}
-  T* GetDataStore(void) {
-    return & register_data_;
-  }
+  explicit InputRegisterController(T* data) : register_data_{data} {}
   bool RegisterSpanValid(std::size_t address, std::size_t count) const {
-    return register_data_->RegisterSpanValid(address, count);
+    return register_data_.RegisterSpanValid(address, count);
   }
   uint16_t ReadRegister(uint16_t address) const {
-    return register_data_->GetRegister(address);
+    return register_data_.GetRegister(address);
   }
   void WriteRegister(uint16_t address, uint16_t value) {
-    register_data_->SetRegister(address, value);
+    register_data_.SetRegister(address, value);
   }
   int32_t ReadFrame(const Frame &frame, Response *response) {
     if (frame.function != Function::kReadInputRegisters) {
@@ -451,11 +446,11 @@ class InputRegisterController {
   void ReadRegisters(const uint16_t starting_address,
                      const uint16_t register_count,
                      ArrayView<uint8_t> *response_data) {
-    if (!register_data_->RegisterSpanValid(starting_address, register_count)) {
+    if (!register_data_.RegisterSpanValid(starting_address, register_count)) {
       assert(0);
       return;
     }
-    register_data_->GetRegisters(starting_address, register_count, response_data);
+    register_data_.GetRegisters(starting_address, register_count, response_data);
   }
 
   Exception ValidateFrame(const Frame &frame) const {

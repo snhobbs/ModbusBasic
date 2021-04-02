@@ -19,3 +19,6 @@
 [submodule "tests/cmake/CMakeStaticAnalysis"]
 	path = tests/CMakeStaticAnalysis
 	url = git@github.com:snhobbs/CMakeStaticAnalysis.git
+[submodule "include/flatbuffers"]
+	path = include/flatbuffers
+	url = git@github.com:snhobbs/flatbuffers.git

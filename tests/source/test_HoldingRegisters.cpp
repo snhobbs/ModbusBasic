@@ -43,8 +43,7 @@ TEST_F(HoldingRegisterDataFixture, RegisterReadWrite) {
 
 struct HoldingRegisterControllerFixture : public ::testing::Test {
   Modbus::RegisterDataStore<kRegisters> map_;
-  Modbus::MappedRegisterDataStore<Modbus::RegisterDataStore<kRegisters>> dc{&map_};
-  Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
+  Modbus::HoldingRegisterController<typeof(map_)> cc{&map_};
 };
 
 TEST_F(HoldingRegisterControllerFixture, AddressValid) {
@@ -76,8 +75,7 @@ TEST_F(HoldingRegisterControllerFixture, RegisterReadWriteAddress) {
 
 struct ValidateHoldingRegisterFramesFixture: public ::testing::Test {
   Modbus::RegisterDataStore<kRegisters> map_{};
-  Modbus::MappedRegisterDataStore<Modbus::RegisterDataStore<kRegisters>> dc{&map_};
-  Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
+  Modbus::HoldingRegisterController<typeof(map_)> cc{&map_};
   std::array<uint8_t, 64> buffer;
   ArrayView<uint8_t> frame_data{buffer.size(), buffer.data()};
 
@@ -95,6 +93,7 @@ TEST_F(ValidateHoldingRegisterFramesFixture, ValidateReadMultipleHoldingRegister
       kAddressStart, register_count, &frame);
   EXPECT_TRUE(Modbus::Exception::kAck == cc.ValidateFrame(frame));
 }
+
 TEST_F(ValidateHoldingRegisterFramesFixture, ValidateWriteSingleHoldingRegisterFrame) {
   Modbus::WriteSingleHoldingRegisterCommand::FillFrame(kAddressStart, 0xff,
                                                        &frame);
