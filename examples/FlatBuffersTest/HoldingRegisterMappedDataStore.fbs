@@ -1,0 +1,11 @@
+
+struct HoldingRegisters {
+  u32_0 : uint32;
+  u32_1 : uint32;
+  u32_2 : uint32;
+  u32_3 : uint32;
+  u32_4 : uint32;
+  u16_0 : uint16;
+  U32_5 : uint32;
+  u32_6 : uint32;
+}

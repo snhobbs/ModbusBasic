@@ -3,3 +3,17 @@ cmake_install.cmake
 Makefile
 build
 /.metadata/
+
+CMakeCache.txt
+
+CMakeFiles
+
+build.ninja
+
+*_generated.h
+
+*modbus_basic_tests
+
+*modbus_client
+
+*.ninja*
