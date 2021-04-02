@@ -2,6 +2,7 @@
  *  Wrap a flatbuffers produced class
  *
  * */
+#pragma once
 #include <cstdint>
 #include <cstring>
 #include "Modbus/DataStore.h"
