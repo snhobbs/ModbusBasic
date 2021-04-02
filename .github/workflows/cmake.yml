@@ -20,11 +20,15 @@ jobs:
     - name: Checkout Submodules
       run: python3 $(pwd)/git_to_https.py .gitmodules && git submodule update --init && git submodule foreach --recursive python3 $(pwd)/git_to_https.py && git submodule update --init
 
+    - name: SetupFlatBuffers
+      # Execute the build.  You can specify a specific target with "--target <NAME>"
+      run: cd $(pwd)/include/flatbuffers && cmake ./ && sudo make install
+ 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
       # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory ${{runner.workspace}}/build
-    
+
     - name: SetupLibs
       working-directory: ${{runner.workspace}}/build
       shell: bash

@@ -101,7 +101,12 @@ class ProtocolRtuSlave {
   SlaveProtocolBase slave_{};
   uint8_t slave_address_;
   TCoilController& coil_controller_;
+ 
+//  FIXME this is public to allow the new data function to be exposed, add an accessor
+ public:
   THoldingRegisterController& holding_register_controller_;
+
+ protected:
   TDiscreteInputController& discrete_input_controller_;
   TInputRegisterController& input_register_controller_;
 
