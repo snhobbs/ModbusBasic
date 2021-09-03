@@ -180,7 +180,7 @@ class ProtocolRtu : public Protocol {
     for (std::size_t i = 0; i < std::min(frame.data_length, data.size()); i++) {
       data[i + kHeaderLength] = frame.data_array[i];
     }
-    return FrameCrcIsValid(ArrayView{frame.data_length + 2, data.data()});
+    return FrameCrcIsValid(ArrayView<uint8_t>{frame.data_length + 2, data.data()});
   }
   bool FrameCrcIsValid(const ArrayView<uint8_t> &frame_buffer) const {
     const uint16_t frame_crc =

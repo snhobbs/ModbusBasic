@@ -14,7 +14,31 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <ArrayView/ArrayView.h>
+
 namespace Modbus {
+template<typename T>
+const constexpr bool is_access_valid(const size_t address, const size_t length, const T& offsets, const T& end_points) {
+  bool start_valid = false;
+  bool end_valid = false;
+  for (auto& pt : offsets) {
+    if (address == pt) {
+      start_valid = true;
+      break;  
+    }
+  }
+
+  const size_t end_point = address + length - 1;
+  for (auto& pt : end_points) {
+    if (end_point == pt) {
+      end_valid = true;
+      break;
+    }
+  }
+  return start_valid && end_valid;
+}
+
+
 struct BasicMemoryMapEntry {
   std::size_t offset;
   std::size_t size;
@@ -41,6 +65,18 @@ public:
       : memory_controller_{memory_controller} {}
 
   std::size_t GetMemoryMapEntryIndex(std::size_t address) const {
+    for (std::size_t i = 0; i < memory_controller_->offsets_.size();
+         i++) {
+      if (address * sizeof(uint16_t) <=
+          memory_controller_->offsets_[i]) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
+#if 0
+  std::size_t GetMemoryMapEntryIndex(std::size_t address) const {
     for (std::size_t i = 0; i < memory_controller_->entry_positions_.size();
          i++) {
       if (address * sizeof(uint16_t) <=
@@ -50,6 +86,7 @@ public:
     }
     return 0;
   }
+#endif
 
   bool IsNewData(void) const { return new_data_; }
   void SetNewData(bool value) { new_data_ = value; }
@@ -79,10 +116,7 @@ public:
   }
 
   bool WriteLocationValid(std::size_t address, std::size_t count) const {
-    const auto &entry = memory_controller_->entry_positions_.at(
-        GetMemoryMapEntryIndex(address - GetAddressStart()));
-    return (address * sizeof(uint16_t) == entry.offset) &&
-           (entry.size == count * sizeof(uint16_t));
+    return is_access_valid(address, count, memory_controller_->offsets_, memory_controller_->end_points_);
   }
 
   template <typename F>
@@ -98,7 +132,7 @@ public:
 
   uint16_t GetRegister(std::size_t address) const {
     std::array<uint8_t, sizeof(uint16_t)> data{};
-    ArrayView data_view{data.size(), data.data()};
+    ArrayView<uint8_t> data_view{data.size(), data.data()};
     GetRegisters(address, 1, &data_view);
     const uint16_t value = Utilities::Make_MSB_uint16_tFromU8Array(data_view);
     return value;

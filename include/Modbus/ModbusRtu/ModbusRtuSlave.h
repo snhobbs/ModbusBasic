@@ -21,7 +21,7 @@
 #include <Modbus/Modbus.h>
 #include <Modbus/ModbusRtu/ModbusRtuProtocol.h>
 #include <Utilities/TypeConversion.h>
-
+#include <ArrayView/ArrayView.h>
 #include <Modbus/Utilities.h>
 #include <cstdint>
 namespace Modbus {
@@ -34,7 +34,7 @@ class SlaveProtocolBase : public ProtocolRtu {
   Response response_{};
   bool response_valid_ = false;
   std::array<uint8_t, 256> frame_data_{};
-  Modbus::Frame framein_{ArrayView{frame_data_.size(), frame_data_.data()}};
+  Modbus::Frame framein_{ArrayView<uint8_t>{frame_data_.size(), frame_data_.data()}};
 
  public:
   ReadContext ctx_{};
