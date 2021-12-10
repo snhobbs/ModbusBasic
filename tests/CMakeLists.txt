@@ -1,35 +1,93 @@
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.10.0)
 
-project(tests)
-add_executable(tests)
-
-target_include_directories(tests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include")
-
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+project(Testing)
+set(ProjectDirectory "${CMAKE_CURRENT_SOURCE_DIR}/..")
+set(LibraryDirectory ${ProjectDirectory}/external)
+#else()
 #SET(CMAKE_CXX_COMPILER clang++-9)
-SET(CMAKE_CXX_COMPILER /usr/bin/g++-8)
-option(RUN_SANITIZER ON)
+SET(CMAKE_CXX_COMPILER /usr/bin/g++-9)
+endif()
 
-if(${RUN_SANITIZER})
+message("\n\nProject directory ${ProjectDirectory}\n\n")
+
+set(TargetName "testing")
+add_executable(${TargetName})
+set(ProjectSource ${ProjectDirectory}/src)
+set(BoardDirectory ${ProjectDirectory}/board)
+set(SourceDirectory ${CMAKE_CURRENT_SOURCE_DIR}/source)
+set(TestSources ${SourceDirectory})
+message("proj source ${ProjectSource}")
+
+target_include_directories(${TargetName} PUBLIC "${SourceDirectory}")
+
+message("\n\nTest include directory ${LibraryDirectory}\n\n")
+set(gtest_DIR "${CMAKE_CURRENT_SOURCE_DIR}/googletest/googletest")
+set(gmock_DIR "${CMAKE_CURRENT_SOURCE_DIR}/googletest/googlemock")
+target_include_directories(${TargetName} PUBLIC "${gtest_DIR}/include")
+
+
+# Add Sources
+set(DIR_SRCS
+  #${TestSources}/test_Coils.cpp
+  #${TestSources}/test_ConnectedDevice.cpp
+  ${TestSources}/test_Crc.cpp
+  #${TestSources}/test_DataConversion.cpp
+  #${TestSources}/test_HoldingRegisters.cpp
+  #${TestSources}/test_MappedHoldingRegisterController.cpp
+  #${TestSources}/test_MappedInputRegisterController.cpp
+  #${TestSources}/test_MappedRegisterDataStore.cpp
+  #${TestSources}/test_RtuMaster.cpp
+  #${TestSources}/test_RtuProtocol.cpp
+  # ${TestSources}/test_RtuSlave.cpp
+  #${TestSources}/test_buffer.cpp
+  #${TestSources}/test_ringbuffer.cpp
+  ${TestSources}/test_BitController.cpp
+  ${TestSources}/test_RegisterController.cpp
+  ${TestSources}/main.cpp
+)
+
+target_sources(${TargetName} PUBLIC ${DIR_SRCS})
+
+
+# Add Data directory
+#target_compile_definitions(
+#  ${TargetName}
+#  PUBLIC
+#  -D__DIR__="${CMAKE_CURRENT_SOURCE_DIR}/data"
+#)
+
+# Compile definitions
+#target_compile_definitions(
+#    ${TargetName}
+#    PUBLIC
+#    -DMODBUS
+#)
+
+if(FALSE)
 target_compile_options(
-tests
+${TargetName}
 PRIVATE
     -fsanitize=address
     -fno-omit-frame-pointer
     -fsanitize=undefined)
 
-target_link_libraries( tests asan)
-#target_link_libraries( tests tsan)
-target_link_libraries( tests ubsan)
-#target_link_libraries( tests msan)
+#target_link_directories(${TargetName} PUBLIC /usr/lib/clang/8/lib/linux/)
+#target_link_libraries( ${TargetName} clang_rt.ubsan_standalone-x86_64.a)
+target_link_libraries( ${TargetName} asan)
+#target_link_libraries( ${TargetName} tsan)
+target_link_libraries( ${TargetName} ubsan)
+#target_link_libraries( ${TargetName} msan)
 endif()
 
 target_compile_options(
-tests
+${TargetName}
 PRIVATE
     -Wall
     -Wextra
     -pedantic
     -Wpedantic
+    -g3
     #-pedantic-errors
     #-Werror=pedantic
 
@@ -42,69 +100,78 @@ PRIVATE
     $<$<CXX_COMPILER_ID:GNU>:-Wsuggest-final-types>
     $<$<CXX_COMPILER_ID:GNU>:-Wmaybe-uninitialized>
     $<$<CXX_COMPILER_ID:GNU>:-Wdouble-promotion>
-    $<$<CXX_COMPILER_ID:GNU>:-Wnull-dereference>
+    #$<$<CXX_COMPILER_ID:GNU>:-Wnull-dereference>
     -Winit-self
 
-    $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-cond>
-    $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
-    $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
-    $<$<CXX_COMPILER_ID:GNU>:-Wrestrict>
+    #$<$<CXX_COMPILER_ID:GNU>:-Wduplicated-cond>
+    #$<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
+    #$<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
+    #$<$<CXX_COMPILER_ID:GNU>:-Wrestrict>
     $<$<C_COMPILER_ID:GNU>:$<$<COMPILE_LANGUAGE:C>:-Wjump-misses-init>>
     $<$<COMPILE_LANGUAGE:CXX>:-Wold-style-cast>
     -Wshadow
 )
 
-target_compile_features(tests PUBLIC cxx_std_17)
-target_compile_definitions(tests PRIVATE TESTING)
-target_compile_definitions(tests PRIVATE UNITTESTING)
-target_compile_definitions(tests PRIVATE LINUX)
-set_property(TARGET tests PROPERTY CXX_STANDARD 17)
+target_compile_features(${TargetName} PUBLIC cxx_std_17)
+target_compile_definitions(${TargetName} PRIVATE TESTING)
+target_compile_definitions(${TargetName} PRIVATE UNITTESTING)
+target_compile_definitions(${TargetName} PRIVATE LINUX)
+target_compile_definitions(${TargetName} PRIVATE DEBUG)
+set_property(TARGET ${TargetName} PROPERTY CXX_STANDARD 17)
 #add_definitions(-D__CORE_CMINSTR_H)
 #add_definitions(-D__CORE_CMINSTR_H)
 #add_definitions(-D__GNUC__)
 
-#target_compile_options(tests PRIVATE -fpermissive)
+#target_compile_options(${TargetName} PRIVATE -fpermissive)
 #target_compile_options(-fprofile-arcs -ftest-coverage)
 
 #SET(GCC_COVERAGE_LINK_FLAGS    "-coverage -lgcov")
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 
-#set(FSL_FEATURE_ADC_HAS_CTRL_LPWRMODE true)
 SET(CMAKE_VERBOSE_MAKEFILE ON)
 
-#fixme this should have all the sources
-set(TestSource ${CMAKE_CURRENT_SOURCE_DIR}/source)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/source sources)
 
-target_sources(tests PUBLIC ${sources})
-target_sources(tests PUBLIC ${TestSource}/main.cpp)
+#----------------------------------------------------------------------
+# GTEST
+#----------------------------------------------------------------------
+target_include_directories(${TargetName} PUBLIC "${gtest_DIR}/include")
+target_include_directories(${TargetName} PUBLIC "${gmock_DIR}/include")
+target_link_directories(${TargetName} PUBLIC ${gtest_DIR}/../lib)
+target_link_libraries(${TargetName} gtest)
+target_link_libraries(${TargetName} gmock)
+target_link_libraries(${TargetName} pthread)
+#target_include_directories(${TargetName} PUBLIC "/usr/src/googletest/googletest/include")
+#----------------------------------------------------------------------
+
+#list(APPEND CMAKE_SYSTEM_INCLUDE_PATH "/usr/include")
+target_include_directories(${TargetName} PUBLIC ${ProjectSource})
+target_include_directories(${TargetName} PUBLIC ${ProjectSource}/../libs)
 
 
-#find_library(GTEST_LIB NAMES gtest)
-find_library(GTEST_LIB gtest REQUIRED)
-#set(GTEST_LIB  "/usr/src/googletest/lib/libgtest.a")
-message("GTEST: ${GTEST_LIB}")
+#----------------------------------------------------------------------
+# Boost
+#----------------------------------------------------------------------
+#set(BOOST_ROOT /usr/lib/boost)
+set(BOOST_INCLUDEDIR /usr/include)
+set(BOOST_LIBRARYDIR /usr/lib/boost/stage/lib)
+find_package(Boost COMPONENTS algorithm core)
+target_include_directories(${TargetName} PUBLIC ${boost_DIR})
 
-find_library(PTHREAD_LIB pthread)
-message("PTHREAD: ${PTHREAD_LIB}")
-target_link_libraries(tests ${GTEST_LIB})
-#target_link_libraries(tests gtest)
-target_link_libraries(tests ${PTHREAD_LIB})
+target_include_directories(${TargetName} PUBLIC "/usr/include")
+include_directories(SYSTEM ~/.local/include/include)
+include_directories(SYSTEM /usr/include)
 
-set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
-include_directories(tests PUBLIC ${INCLUDE_DIR})
-target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/source)
-include_directories(tests PUBLIC ${INCLUDE_DIR}/CppUtilities/include)
-target_include_directories(tests PUBLIC ${INCLUDE_DIR}/CppUtilities/include/sprout)
-target_include_directories(tests PUBLIC ${INCLUDE_DIR}/DataStores/include)
+message(STATUS "Sources: ${DIR_SRCS}")
+message("System Path" ${CMAKE_SYSTEM_INCLUDE_PATH})
+#------------------------------------------------------------
+# Static Analysis
+#------------------------------------------------------------
+#if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+#  set(CMakeStaticAnalysis_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMakeStaticAnalysis)
+#  include(${CMakeStaticAnalysis_DIR}/Utilities.cmake)
+#  GetStaticAnalysisFiles("${TargetName}" "")
+#  include(${CMakeStaticAnalysis_DIR}/StaticAnalysis.cmake)
+#  StaticAnalysis("${AnalyseFiles}" "./")
+#endif()
 
-if(RUN_ANALYSIS)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeStaticAnalysis/StaticAnalysis.cmake)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeStaticAnalysis/Utilities.cmake)
-GetStaticAnalysisFiles(tests "${StaticExcludes}")
-message(STATUS "Analyze ${AnalyseFiles}")
-StaticAnalysis("${AnalyseFiles}")
-endif()
-
-add_test(NAME tests COMMAND tests)
+add_test(NAME tests COMMAND ${TargetName})
