@@ -1,9 +1,11 @@
+#include "Modbus/Modbus.h"
 #include "Modbus/Accessor.h"
 #include "Modbus/BitController.h"
 #include "Modbus/RegisterController.h"
 #include <array>
 #include <gtest/gtest.h>
 
+using namespace Modbus;
 TEST(Accessor, instantiate) {
   BitController coil{nullptr, 0};
   BitController dinput{nullptr, 0};
@@ -37,13 +39,18 @@ class Accessor_Test : public testing::Test {
   std::array<RegisterField*, 1> input_register_fields {&input_register_bf};
   RegisterController input_register{input_register_fields.data(), input_register_fields.size()};
 
-  static const constexpr std::array<FieldType, 4> kFields {FieldType::kCoil, FieldType::kDiscrete, FieldType::kHoldingRegister, FieldType::kInputRegister};
+  static const constexpr std::array<AddressSpace, 4> kAddresses {
+      AddressSpace::kCoil,
+      AddressSpace::kDiscreteInput,
+      AddressSpace::kHoldingRegister,
+      AddressSpace::kInputRegister};
+
   Accessor accessor{&coil, &discrete_input, &holding_register, &input_register};
 };
 
 TEST_F(Accessor_Test, valid_access_returns_true) {
   std::array<uint8_t, 128> data_array{};
-  for (auto field : kFields) {
+  for (auto field : kAddresses) {
     const size_t fields = accessor.access_valid(0, 1, field);
     EXPECT_EQ(fields, 1);
   }
@@ -52,7 +59,7 @@ TEST_F(Accessor_Test, valid_access_returns_true) {
 TEST_F(Accessor_Test, valid_read_returns_number_of_fields) {
   std::array<uint8_t, 128> data_array{};
   u8_Buffer buffer {data_array.data(), data_array.size()};
-  for (auto field : kFields) {
+  for (auto field : kAddresses) {
     const size_t fields = accessor.read(0, 1, field, &buffer);
     EXPECT_EQ(fields, 1);
   }
@@ -61,7 +68,7 @@ TEST_F(Accessor_Test, valid_read_returns_number_of_fields) {
 TEST_F(Accessor_Test, valid_write_returns_number_of_fields) {
   std::array<uint8_t, 128> data_array{};
   const u8_Buffer buffer {data_array.data(), data_array.size()};
-  for (auto field : kFields) {
+  for (auto field : kAddresses) {
     const size_t fields = accessor.write(0, 1, field, &buffer);
     EXPECT_EQ(fields, 1);
   }

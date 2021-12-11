@@ -3,6 +3,8 @@
 #include <array>
 #include <cstdio>
 
+using namespace Modbus;
+
 TEST(RegisterControllerfields_are_sorted, blocks_in_order_passes) {
   std::array<uint8_t, 64> block_buffer_0;
   std::array<uint8_t, 64> block_buffer_1;

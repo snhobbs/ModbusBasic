@@ -12,7 +12,6 @@
 #ifndef MODBUS_MODBUS_H_
 #define MODBUS_MODBUS_H_
 
-#include <ArrayView/ArrayView.h>
 #include <array>
 #include <cassert>
 #include <cstdint>
@@ -40,7 +39,7 @@
 
 namespace Modbus {
 
-inline const uint8_t kStatusResponseAddValue = 0x80;  //  Add to function response when sending status code
+const constexpr uint8_t kStatusResponseAddValue = 0x80;  //  Add to function response when sending status code
 enum class Exception : uint8_t {
   kNoException = 0,
   kIllegalFunction = 1,
@@ -55,6 +54,7 @@ enum class Exception : uint8_t {
   kGatewayPathDeviceNoResponse,
   kCrcFailure,  //  Do not send this, internal use only
 };
+
 enum class AddressSpace : uint32_t {
   kCoil = 0,
   kDiscreteInput = 0x100000,
@@ -109,15 +109,14 @@ enum class Function : uint8_t {
   kNone = 0xff
 };
 
-
-
-constexpr Modbus::Function GetErrorFunction(Modbus::Function function) {
+inline constexpr Modbus::Function GetErrorFunction(Modbus::Function function) {
   if (static_cast<uint8_t>(function) >= kStatusResponseAddValue) {
     return function;
   } else {
     return static_cast<Modbus::Function>(static_cast<uint8_t>(function) + kStatusResponseAddValue);
   }
 }
+
 enum class PacketState {
   kAddress,
   kFunction,
@@ -131,6 +130,7 @@ enum class CoilState : uint16_t {
   kOn = 0xff00,
   kInvalid = 0xffff
 };
+
 // const constexpr extern Modbus::Function valid_functions[18];
 inline const constexpr std::array<const Modbus::Function, 19> GetValidFunctions() {
   return {
@@ -155,29 +155,31 @@ inline const constexpr std::array<const Modbus::Function, 19> GetValidFunctions(
     Modbus::Function::kReadDeviceIdentification,
   };
 }
-#if 0
-const inline constexpr std::array<const Modbus::Function, 19> valid_functions {
+
+inline const constexpr std::array<const Modbus::Function, 8> GetSupportedFunctions() {
+  return {
     Modbus::Function::kReadCoils,
     Modbus::Function::kReadDiscreteInputs,
     Modbus::Function::kReadMultipleHoldingRegisters,
     Modbus::Function::kReadInputRegisters,
     Modbus::Function::kWriteSingleCoil,
     Modbus::Function::kWriteSingleHoldingRegister,
-    Modbus::Function::kReadExceptionStatus,
-    Modbus::Function::kDiagnostic,
-    Modbus::Function::kGetComEventCounter,
-    Modbus::Function::kGetComEventLog,
+    // Modbus::Function::kReadExceptionStatus,
+    // Modbus::Function::kDiagnostic,
+    // Modbus::Function::kGetComEventCounter,
+    // Modbus::Function::kGetComEventLog,
     Modbus::Function::kWriteMultipleCoils,
     Modbus::Function::kWriteMultipleHoldingRegisters,
-    Modbus::Function::kReportSlaveId,
-    Modbus::Function::kReadFileRecord,
-    Modbus::Function::kWriteFileRecord,
-    Modbus::Function::kMaskWriteRegister,
-    Modbus::Function::kReadWriteMultipleRegisters,
-    Modbus::Function::kReadFifoQueue,
-    Modbus::Function::kReadDeviceIdentification,
-};
-#endif
+    // Modbus::Function::kReportSlaveId,
+    // Modbus::Function::kReadFileRecord,
+    // Modbus::Function::kWriteFileRecord,
+    // Modbus::Function::kMaskWriteRegister,
+    // Modbus::Function::kReadWriteMultipleRegisters,
+    // Modbus::Function::kReadFifoQueue,
+    // Modbus::Function::kReadDeviceIdentification,
+  };
+}
+
 inline constexpr Modbus::AddressSpace GetAddressSpaceFromFunction(
     Modbus::Function function) {
   switch (function) {
@@ -236,6 +238,17 @@ inline constexpr Modbus::Function GetFunction(uint8_t code) {
   return Modbus::Function::kNone;
 }
 
+inline constexpr bool FunctionIsSupported(const Function function) {
+  for (auto i : Modbus::GetSupportedFunctions()) {
+    bool valid = false;
+    if (function == i) {
+      valid = true;
+      break;
+    }
+    return valid;
+  }
+}
+
 inline constexpr bool FunctionCodeIsValid(uint8_t code) {
   if (code > static_cast<uint8_t>(Function::kReadDeviceIdentification)) {
     return false;
@@ -248,6 +261,30 @@ inline constexpr bool FunctionCodeIsValid(uint8_t code) {
   return false;
 }
 
+enum class PacketType {
+  kCommand,
+  kResponse,
+  kError,
+  kUnknown
+};
+
+class Packet {
+  AddressSpace address_space;
+  Function function_type;
+  PacketType sub_type;
+
+  /*
+   * Return length of header, this is constant for each packet type
+   * */
+  virtual void get_header_length(void) const = 0;
+
+  /*
+   * Return length of data section, reads from the packet input
+   * */
+  virtual void get_data_length(const uint8_t* data, const size_t size) const = 0;
+};
+
+#if 0
 struct Frame {
   uint8_t address = 0;
   Modbus::Function function{Modbus::Function::kNone};
@@ -333,6 +370,6 @@ struct Command {
 
 class Protocol {};
 
+#endif
 }  //  namespace Modbus
-
 #endif  //  MODBUS_MODBUS_H_

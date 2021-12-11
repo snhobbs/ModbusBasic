@@ -6,7 +6,7 @@
     + read
     + write
     + access valid
-+ These are passed to a schema object to control the interface
++ These are passed to an Accessor schema object to control the interface
 + The schema handles the requests:
     + read : start, length, buffer -> reads data from the controller
     + write : start, length, buffer -> writes data to the controller
@@ -14,7 +14,7 @@
 + The schema is passed to a protocol controller which handles all packets
     + Data is available immediately for both writes and reads
 
-+ Read & writes of controllers are done with a start, length, buffer, buffer_length
++ Read & writes of controllers are done with a start, length, buffer, u8Buffer
 
 
 ## Interface with code
@@ -46,7 +46,8 @@ typedef BitField RegisterField;
 ## Components
 + BitController{BitField* entries, const size_t entry_length}
 + RegisterController{RegisterField* entries, const size_t entry_length}
-+ ModbusSchema{BitController* p_coils, BitController* p_discrete_inputs, RegisterController* p_holding_registers, RegisterController* p_input_registers}
++ Accessor{BitController* p_coils, BitController* p_discrete_inputs, RegisterController* p_holding_registers, RegisterController* p_input_registers}
+	Combines the different fields exposing the same read, write, validate functions
 + ProtocolController{IODevice* iodevice, ModbusSchema* p_schema}
     + Should be broken into slave/master to reduce dependancies
     + Both have their update functions called with the current time for rough timing between packets
@@ -65,3 +66,34 @@ typedef BitField RegisterField;
 + Bit read and write are done with an array of bytes, and a write length. A buffer length is also passed for checking.
 Each controller is initialized by passing it a linked list of data objects.
 The protocol controller and controllers are fully put in a library.
+
+
+
+# Protocol Controller                                                             
++ reads, writes passed through accessor                                           
++ wether or not a access is valid is handled by accessor                          
++ Bytes come in, they should be passed consistantly to the reader, updating the state
+  + Packet full, all data read                                                    
+  + Check crc, reject send error response or continue                             
+  + Find action and field type from packet header, if action is unsupported send error else continue                                                                   
+      +  FieldType GetAddressSpaceFromFunction(Command)                                                                                                                
+  + validate access through accessor, send error or continue                                                                                                           
+  + Apply action through accessor                                                                                                                                      
+  + Calculate crc                                                                                                                                                      
+  + send packet                                                                                                                                                        
++ Data is sent directly to uart, uart buffer should be large enough to handle the largest access 
+                                                                                  
++ ReadStateMachine                                                                
+  + Knows the type of packets, applies logic to know state                                                                                                             
+    + Read known header length till packet type                                                                                                                        
+    + Request meta data length                                                    
+    + read till meta data finished                                                
+        + Interfaces? Polymorphic handling                              
+    + request data length                                                         
+        + Interface, needs to call something to process the packet.
+    + read till data finished                                                     
+    + dispatch                                                                    
++ Crc Calculator                                                                  
++ PacketReader                                                                    
+  + Structure knowlege shared with ReadStateMachine, shared knowledge should be factored out
++ Interface to IO  

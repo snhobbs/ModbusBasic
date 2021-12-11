@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <Modbus/ModbusNew.h>
 
+namespace Modbus {
 class BitController {
   BitField** entries_;
   size_t entry_length_;
@@ -60,4 +61,4 @@ class BitController {
     entries_{entries}, entry_length_{entry_length}, controller_{entries, entry_length} {}
 };
 
-
+}

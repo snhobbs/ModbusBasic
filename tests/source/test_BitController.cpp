@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <array>
 
-
+using namespace Modbus;
 TEST(fields_are_sorted, blocks_in_order_passes) {
   std::array<uint8_t, 64> block_buffer_0;
   std::array<uint8_t, 64> block_buffer_1;

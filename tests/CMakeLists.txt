@@ -42,8 +42,10 @@ set(DIR_SRCS
   # ${TestSources}/test_RtuSlave.cpp
   #${TestSources}/test_buffer.cpp
   #${TestSources}/test_ringbuffer.cpp
+  ${TestSources}/test_Modbus.cpp
   ${TestSources}/test_BitController.cpp
   ${TestSources}/test_RegisterController.cpp
+  ${TestSources}/test_Accessor.cpp
   ${TestSources}/main.cpp
 )
 

@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "Modbus/ModbusNew.h"
 
-
+namespace Modbus {
 class RegisterController {
   RegisterField** entries_;
   size_t entry_length_;
@@ -55,4 +55,4 @@ class RegisterController {
   RegisterController(RegisterField** entries, const size_t entry_length) :
     entries_{entries}, entry_length_{entry_length}, controller_{entries, entry_length} {}
 };
-
+}
