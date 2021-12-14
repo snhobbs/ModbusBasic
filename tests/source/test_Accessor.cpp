@@ -2,8 +2,8 @@
 #include "Modbus/Accessor.h"
 #include "Modbus/BitController.h"
 #include "Modbus/RegisterController.h"
-#include <array>
 #include <gtest/gtest.h>
+#include <array>
 
 using namespace Modbus;
 TEST(Accessor, instantiate) {

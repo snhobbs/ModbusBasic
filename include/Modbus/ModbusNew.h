@@ -41,7 +41,7 @@ class Controller {
   size_t entry_length_;
 
  public:
-  size_t find_block(const size_t address, const size_t length) const {
+  size_t find_block(const size_t address, const size_t) const {
     size_t block = entry_length_;  //  impossible value
     for (size_t i=0; i<entry_length_; i++) {
       const size_t block_end = entries_[i]->address + entries_[i]->length - 1;
