@@ -81,28 +81,25 @@ class SlaveProtocolBase : public ProtocolRtu {
   explicit SlaveProtocolBase(Crc16 crc16) : ProtocolRtu{crc16} {}
 };
 
-template <typename TCoilController, typename THoldingRegisterController,
-          typename TDiscreteInputController,
+template <typename THoldingRegisterController,
           typename TInputRegisterController>
 class ProtocolRtuSlave {
  protected:
   static const constexpr Function implimented_functions_[]{
-      Function::kReadCoils,
-      Function::kReadDiscreteInputs,
+      //  Function::kReadCoils,
+      //  Function::kReadDiscreteInputs,
       Function::kReadMultipleHoldingRegisters,
       Function::kReadInputRegisters,
-      Function::kWriteSingleCoil,
+      //  Function::kWriteSingleCoil,
       Function::kWriteSingleHoldingRegister,
       Function::kWriteMultipleHoldingRegisters,
-      Function::kWriteMultipleCoils,
+      //  Function::kWriteMultipleCoils,
       //  Function::kReadDeviceIdentification,
   };
 
   SlaveProtocolBase slave_{};
   uint8_t slave_address_;
-  TCoilController& coil_controller_;
   THoldingRegisterController& holding_register_controller_;
-  TDiscreteInputController& discrete_input_controller_;
   TInputRegisterController& input_register_controller_;
 
  public:
@@ -121,10 +118,10 @@ class ProtocolRtuSlave {
     Response response{};
     switch (GetAddressSpaceFromFunction(frame.function)) {
     case (AddressSpace::kCoil):
-      response_code = coil_controller_.ReadFrame(frame, &response);
+      response_code = -1;
       break;
     case (AddressSpace::kDiscreteInput):
-      response_code = discrete_input_controller_.ReadFrame(frame, &response);
+      response_code = -1;
       break;
     case (AddressSpace::kInputRegister):
       response_code = input_register_controller_.ReadFrame(frame, &response);
@@ -168,9 +165,9 @@ class ProtocolRtuSlave {
     }
     switch (GetAddressSpaceFromFunction(frame.function)) {
     case (AddressSpace::kCoil):
-      return coil_controller_.ValidateFrame(frame);
+      return Exception::kIllegalFunction;
     case (AddressSpace::kDiscreteInput):
-      return discrete_input_controller_.ValidateFrame(frame);
+      return Exception::kIllegalFunction;
     case (AddressSpace::kInputRegister):
       return input_register_controller_.ValidateFrame(frame);
     case (AddressSpace::kHoldingRegister):
@@ -215,13 +212,10 @@ class ProtocolRtuSlave {
   }
 
   explicit ProtocolRtuSlave(Crc16 crc16, uint8_t slave_address,
-              TCoilController& coil_controller,
               THoldingRegisterController& holding_register_controller,
-              TDiscreteInputController& discrete_input_controller,
               TInputRegisterController& input_register_controller)
       : slave_{crc16}, slave_address_{slave_address},
-        coil_controller_{coil_controller},
-    holding_register_controller_{holding_register_controller}, discrete_input_controller_{discrete_input_controller},
+    holding_register_controller_{holding_register_controller},
     input_register_controller_{input_register_controller}{}
 };
 }  //  namespace Modbus

@@ -28,13 +28,7 @@ struct RtuSlaveFixture : public ::testing::Test {
   static const constexpr std::size_t kFrameOverhead =
       Modbus::Command::kHeaderLength + Modbus::Command::kFooterLength;
   static const constexpr uint8_t kSlaveAddress = 0xad;
-  static const constexpr std::size_t coil_count = 64;
   static const constexpr std::size_t holding_register_count = 64;
-
-  using CoilController = Modbus::CoilController<Modbus::BitFieldDataStore<coil_count>>;
-  CoilController coil_controller;
-  using DiscreteController = Modbus::DiscreteInputController<Modbus::BitFieldDataStore<coil_count>>;
-  DiscreteController discrete_input_controller;
 
   using HoldingController = Modbus::HoldingRegisterController<Modbus::RegisterDataStore<holding_register_count>>;
   Modbus::RegisterDataStore<holding_register_count> holding_map;
@@ -44,10 +38,8 @@ struct RtuSlaveFixture : public ::testing::Test {
   Modbus::RegisterDataStore<holding_register_count> input_map;
   InputController input_register_controller{&input_map};
 
-  Modbus::ProtocolRtuSlave<CoilController, HoldingController, DiscreteController, InputController> slave{&crc16,
+  Modbus::ProtocolRtuSlave<HoldingController, InputController> slave{&crc16,
             kSlaveAddress,
-            coil_controller,
-            holding_register_controller,
             discrete_input_controller,
             input_register_controller};
   static const constexpr std::size_t kDataLength = 9;
@@ -117,52 +109,6 @@ TEST_F(RtuSlaveFixture, SlaveAddressMatch) {
 }
 #endif
 
-namespace TestRtuSlaveCoils {
-
-//  make a full frame to a coil, check succeeded
-TEST_F(RtuSlaveFixture, WriteSingleCoil) {
-  uint16_t address = 0;
-  std::array<uint8_t, kDataLength> frame_data{};
-
-  for (uint16_t coil = 0; coil < coil_count; coil++) {
-    Modbus::Frame packet{
-        kSlaveAddress, Modbus::Function::kNone, frame_data.size(),
-        ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
-    packet.function = Modbus::Function::kWriteSingleCoil;
-    Modbus::WriteSingleCoilCommand::FillFrame(address++, Modbus::CoilState::kOn,
-                                              &packet);
-    CheckFrame(packet);
-  }
-}
-TEST_F(RtuSlaveFixture, WriteMultipleCoils) {
-  uint16_t address = 0;
-  std::array<uint8_t, kDataLength> frame_data{};
-
-  for (uint16_t coil = 0; coil < coil_count; coil++) {
-    Modbus::Frame packet{
-        kSlaveAddress, Modbus::Function::kNone, frame_data.size(),
-        ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
-    packet.function = Modbus::Function::kWriteMultipleCoils;
-    std::array<uint8_t, 1> coil_data{0xff};
-    ArrayView<const uint8_t> coil_view{coil_data.size(), coil_data.data()};
-    Modbus::WriteMultipleCoilsCommand::FillFrame(address++, 1, coil_view,
-                                                 &packet);
-    CheckFrame(packet);
-  }
-}
-TEST_F(RtuSlaveFixture, ReadCoils) {
-  uint16_t address = 0;
-  std::array<uint8_t, kDataLength> frame_data{};
-
-  for (uint16_t coil = 0; coil < coil_count; coil++) {
-    Modbus::Frame packet{
-        kSlaveAddress, Modbus::Function::kNone, frame_data.size(),
-        ArrayView<uint8_t>{frame_data.size(), frame_data.data()}};
-    packet.function = Modbus::Function::kReadCoils;
-    Modbus::ReadBitsCommand::FillFrame(address++, 1, &packet);
-    CheckFrame(packet);
-  }
-}
 TEST_F(RtuSlaveFixture, WriteSingleHoldingRegisterCommand) {
   uint16_t address = 0;
   std::array<uint8_t, kDataLength> frame_data{};
@@ -244,7 +190,5 @@ TEST_F(RtuSlaveFixture, ReadHoldingValueCheck) {
   EXPECT_EQ(resp.at(offset++), 0xbe);
   EXPECT_EQ(resp.at(offset++), 0xef);
 }
-
-} // namespace TestRtuSlaveCoils
 
 } //  namespace ModbusTests

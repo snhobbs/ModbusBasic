@@ -5,7 +5,7 @@
 #include <cstring>
 #include <climits>
 #include <algorithm>
-#include "Modbus/Serializer.h"
+#include <Utilities/Serializer.h>
 
 #define BYTE_SIZE 8
 #define REGISTER_SIZE 2

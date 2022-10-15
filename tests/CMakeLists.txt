@@ -4,9 +4,10 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 project(Testing)
 set(ProjectDirectory "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(LibraryDirectory ${ProjectDirectory}/external)
-#else()
 #SET(CMAKE_CXX_COMPILER clang++-9)
 SET(CMAKE_CXX_COMPILER /usr/bin/g++-9)
+else()
+set(ProjectDirectory "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
 message("\n\nProject directory ${ProjectDirectory}\n\n")
@@ -25,6 +26,7 @@ message("\n\nTest include directory ${LibraryDirectory}\n\n")
 set(gtest_DIR "${CMAKE_CURRENT_SOURCE_DIR}/googletest/googletest")
 set(gmock_DIR "${CMAKE_CURRENT_SOURCE_DIR}/googletest/googlemock")
 target_include_directories(${TargetName} PUBLIC "${gtest_DIR}/include")
+target_include_directories(${TargetName} PUBLIC "${ProjectDirectory}/../lib/CppUtilities/include")
 
 
 # Add Sources
@@ -43,7 +45,7 @@ set(DIR_SRCS
   #${TestSources}/test_buffer.cpp
   #${TestSources}/test_ringbuffer.cpp
   ${TestSources}/test_Modbus.cpp
-  ${TestSources}/test_BitController.cpp
+  #${TestSources}/test_BitController.cpp
   ${TestSources}/test_RegisterController.cpp
   ${TestSources}/test_Accessor.cpp
   ${TestSources}/main.cpp

@@ -15,6 +15,7 @@
 #include <array>
 #include <cassert>
 #include <cstdint>
+#include <ArrayView/ArrayView.h>
 /*
  * Central modbus definitions
  *  -> data types
@@ -156,19 +157,19 @@ inline const constexpr std::array<const Modbus::Function, 19> GetValidFunctions(
   };
 }
 
-inline const constexpr std::array<const Modbus::Function, 8> GetSupportedFunctions() {
+inline const constexpr std::array<const Modbus::Function, 4> GetSupportedFunctions() {
   return {
-    Modbus::Function::kReadCoils,
-    Modbus::Function::kReadDiscreteInputs,
+    // Modbus::Function::kReadCoils,
+    // Modbus::Function::kReadDiscreteInputs,
     Modbus::Function::kReadMultipleHoldingRegisters,
     Modbus::Function::kReadInputRegisters,
-    Modbus::Function::kWriteSingleCoil,
+    // Modbus::Function::kWriteSingleCoil,
     Modbus::Function::kWriteSingleHoldingRegister,
     // Modbus::Function::kReadExceptionStatus,
     // Modbus::Function::kDiagnostic,
     // Modbus::Function::kGetComEventCounter,
     // Modbus::Function::kGetComEventLog,
-    Modbus::Function::kWriteMultipleCoils,
+    // Modbus::Function::kWriteMultipleCoils,
     Modbus::Function::kWriteMultipleHoldingRegisters,
     // Modbus::Function::kReportSlaveId,
     // Modbus::Function::kReadFileRecord,
@@ -284,7 +285,7 @@ class Packet {
   virtual void get_data_length(const uint8_t* data, const size_t size) const = 0;
 };
 
-#if 0
+#if 1
 struct Frame {
   uint8_t address = 0;
   Modbus::Function function{Modbus::Function::kNone};

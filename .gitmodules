@@ -10,3 +10,6 @@
 [submodule "tests/cmake/CMakeStaticAnalysis"]
 	path = tests/CMakeStaticAnalysis
 	url = git@github.com:snhobbs/CMakeStaticAnalysis.git
+[submodule "lib/CppUtilities"]
+	path = lib/CppUtilities
+	url = git@github.com:snhobbs/CppUtilities

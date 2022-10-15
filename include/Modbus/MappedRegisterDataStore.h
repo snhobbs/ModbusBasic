@@ -41,7 +41,7 @@ public:
       : memory_controller_{memory_controller} {}
 
   std::size_t GetMemoryMapEntryIndex(std::size_t address) const {
-    for (std::size_t i = 0; i < memory_controller_->entry_positions_.size();
+    for (std::size_t i = 0; i < memory_controller_->entries_;
          i++) {
       if (address * sizeof(uint16_t) <=
           memory_controller_->entry_positions_[i].offset) {
@@ -79,8 +79,8 @@ public:
   }
 
   bool WriteLocationValid(std::size_t address, std::size_t count) const {
-    const auto &entry = memory_controller_->entry_positions_.at(
-        GetMemoryMapEntryIndex(address - GetAddressStart()));
+    const auto &entry = memory_controller_->entry_positions_[
+        GetMemoryMapEntryIndex(address - GetAddressStart())];
     return (address * sizeof(uint16_t) == entry.offset) &&
            (entry.size == count * sizeof(uint16_t));
   }

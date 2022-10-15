@@ -11,7 +11,6 @@
 
 #pragma once
 #include <Modbus/Modbus.h>
-#include <Modbus/BitControl.h>
 #include <Modbus/RegisterControl.h>
 #include <Utilities/TypeConversion.h>
 #include <cstdint>
@@ -26,29 +25,17 @@ inline constexpr std::size_t GetRequiredPacketSize(const Modbus::Frame &packet) 
 }
 
 inline int32_t CalculateMetaDataBytesRemaining(const Function function) {
-  if (function == Function::kReadCoils) {
-    return ReadBitsCommand::CommandPacket::kPacketSize;
-  }
-  else if (function == Function::kReadDiscreteInputs) {
-    return ReadBitsCommand::CommandPacket::kPacketSize;
-  }
-  else if (function == Function::kReadMultipleHoldingRegisters) {
+  if (function == Function::kReadMultipleHoldingRegisters) {
     return ReadMultipleRegistersCommandBase::CommandPacket::kPacketSize;
   }
   else if (function == Function::kReadInputRegisters) {
     return ReadMultipleRegistersCommandBase::CommandPacket::kPacketSize;
-  }
-  else if (function == Function::kWriteSingleCoil) {
-    return WriteSingleCoilCommand::CommandPacket::kValueStart;
   }
   else if (function == Function::kWriteSingleHoldingRegister) {
     return WriteSingleHoldingRegisterCommand::CommandPacket::kValueStart;
   }
   else if (function == Function::kWriteMultipleHoldingRegisters) {
     return WriteMultipleHoldingRegistersCommand::CommandPacket::kValueStart;
-  }
-  else if (function == Function::kWriteMultipleCoils) {
-    return WriteMultipleCoilsCommand::CommandPacket::kValueStart;
   }
   return 0;
       //  Function::kReadExceptionStatus,
@@ -67,20 +54,11 @@ inline int32_t CalculateMetaDataBytesRemaining(const Function function) {
 inline int32_t CalculateBytesRemaining(const Frame& frame) {
   const auto function = frame.function;
   std::size_t bytes = 0;
-  if (function == Function::kReadCoils) {
-    return 0;
-  }
-  else if (function == Function::kReadDiscreteInputs) {
-    return 0;
-  }
-  else if (function == Function::kReadMultipleHoldingRegisters) {
+  if (function == Function::kReadMultipleHoldingRegisters) {
     bytes = 0;
   }
   else if (function == Function::kReadInputRegisters) {
     bytes = 0;
-  }
-  else if (function == Function::kWriteSingleCoil) {
-    bytes = sizeof(uint16_t);
   }
   else if (function == Function::kWriteSingleHoldingRegister) {
     bytes = sizeof(uint16_t);
@@ -88,10 +66,6 @@ inline int32_t CalculateBytesRemaining(const Frame& frame) {
   else if (function == Function::kWriteMultipleHoldingRegisters) {
     bytes = frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::kNumberOfDataBytes];// << 8 | 
       //frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::kNumberOfDataBytes]; 
-  }
-  else if (function == Function::kWriteMultipleCoils) {
-    bytes = frame.data_array[WriteMultipleCoilsCommand::CommandPacket::kNumberOfDataBytes];// << 8 | 
-      //  frame.data_array[WriteMultipleCoilsCommand::CommandPacket::kNumberOfDataBytes]; 
   }
   return bytes;
 }
