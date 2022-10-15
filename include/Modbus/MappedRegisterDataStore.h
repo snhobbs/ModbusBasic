@@ -14,6 +14,13 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+
+template <typename T> struct Equal_UnaryPredicate {
+  const T d_;
+  Equal_UnaryPredicate(const T &n) : d_{n} {}
+  bool operator()(const T &n) const { return n == d_; }
+};
+
 namespace Modbus {
 struct BasicMemoryMapEntry {
   std::size_t offset;
@@ -41,11 +48,12 @@ public:
       : memory_controller_{memory_controller} {}
 
   std::size_t GetMemoryMapEntryIndex(std::size_t address) const {
-    for (std::size_t i = 0; i < memory_controller_->entries_;
-         i++) {
-      if (address * sizeof(uint16_t) <=
-          memory_controller_->entry_positions_[i].offset) {
-        return i;
+    /*
+     * Returns the index of the matching address. Returns 0 otherwise.
+     * */
+    for (auto pt : memory_controller_->offsets_) {
+      if (pt == address) {
+        return pt;
       }
     }
     return 0;
@@ -56,12 +64,14 @@ public:
   void SetField(const std::size_t identifier,
                 const ArrayView<const uint8_t> &data_view) {
     SetNewData(true);
-    memory_controller_->SetField(identifier, data_view.data(), data_view.size());
+    memory_controller_->SetField(identifier, data_view.data(),
+                                 data_view.size());
   }
 
   void GetField(const std::size_t identifier,
                 ArrayView<uint8_t> *data_view) const {
-    return memory_controller_->GetField(identifier, data_view->data(), data_view->size());
+    return memory_controller_->GetField(identifier, data_view->data(),
+                                        data_view->size());
   }
 
 public:
@@ -79,10 +89,21 @@ public:
   }
 
   bool WriteLocationValid(std::size_t address, std::size_t count) const {
-    const auto &entry = memory_controller_->entry_positions_[
-        GetMemoryMapEntryIndex(address - GetAddressStart())];
-    return (address * sizeof(uint16_t) == entry.offset) &&
-           (entry.size == count * sizeof(uint16_t));
+    /*
+     * Arguments:
+     * 	+ address : start location
+     * 	+ count : number of registers
+     *
+     * 	Only for complete writes of registers. Allow a write if the address is
+     * in start positions and the end point of address + count is in end points
+     * */
+    const bool valid = std::any_of(memory_controller_->offsets_.cbegin(),
+                                   memory_controller_->offsets_.cend(),
+                                   Equal_UnaryPredicate(address)) &
+                       std::any_of(memory_controller_->end_points_.cbegin(),
+                                   memory_controller_->end_points_.cend(),
+                                   Equal_UnaryPredicate(address + count));
+    return valid;
   }
 
   template <typename F>
@@ -123,6 +144,6 @@ public:
     assert(WriteLocationValid(address, register_count));
     SetFieldFromAddress(address, data_view);
   }
-};  //  class MappedRegisterDataStore
+}; //  class MappedRegisterDataStore
 
 } //  namespace Modbus
