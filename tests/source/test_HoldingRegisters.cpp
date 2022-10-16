@@ -12,7 +12,7 @@
 #include "Crc.h"
 #include <Modbus/Modbus.h>
 #include <Modbus/RegisterControl.h>
-#include <Modbus/DataStore.h>
+#include <Modbus/DataStores/RegisterDataStore.h>
 //#include <Modbus/ModbusRtu/ModbusRtu.h>
 #include <ArrayView/ArrayView.h>
 #include <gtest/gtest.h>
@@ -21,6 +21,7 @@
 #include <vector>
 #include <cassert>
 #include <cstdint>
+
 
 namespace ModbusTests {
 static const constexpr std::size_t kRegisters = 69;

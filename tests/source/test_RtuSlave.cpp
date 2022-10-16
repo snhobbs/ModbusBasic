@@ -12,7 +12,7 @@
 #include "Crc.h"
 #include <ArrayView/ArrayView.h>
 #include <Modbus/Modbus.h>
-#include <Modbus/DataStore.h>
+#include <Modbus/DataStores/RegisterDataStore.h>
 #include <Modbus/RegisterControl.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <gtest/gtest.h>
@@ -40,7 +40,7 @@ struct RtuSlaveFixture : public ::testing::Test {
 
   Modbus::ProtocolRtuSlave<HoldingController, InputController> slave{&crc16,
             kSlaveAddress,
-            discrete_input_controller,
+            holding_register_controller,
             input_register_controller};
   static const constexpr std::size_t kDataLength = 9;
   std::array<uint8_t, kDataLength> data{1, 2, 3, 4, 5, 6, 7, 8, 0};

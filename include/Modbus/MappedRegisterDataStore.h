@@ -9,11 +9,12 @@
  * */
 #pragma once
 #include <Modbus/DataCommand.h>
-#include <Modbus/DataStore.h>
+#include <Modbus/DataStores/DataStore.h>
 #include <Modbus/Modbus.h>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 template <typename T> struct Equal_UnaryPredicate {
   const T d_;
@@ -39,6 +40,42 @@ template <typename T> struct IdentifierMemoryMapEntry {
   std::size_t size;
 };
 
+
+template<typename T>
+inline size_t get_matching_index(const T& value, const std::pair<const T*, size_t>& collection) {
+	/*
+	 * Cycle through the buffer, check if the value matches, if it does, return the index.
+	 * Return length of buffer if unfound.
+	 * */
+	size_t i=0;
+    for (i=0; i< collection.second; i++) {
+      if (collection.first[i] == value) {
+        break;
+      }
+    }
+    return i;
+}
+
+inline bool check_location_valid(std::size_t address, std::size_t count,
+		const std::pair<const size_t*, size_t>& offsets,
+		const std::pair<const size_t*, size_t>& end_points) {
+  /*
+   * Arguments:
+   * 	+ address : start location
+   * 	+ count : number of registers
+   *
+   * 	Only for complete writes of registers. Allow a write if the address is
+   * in start positions and the end point of address + count is in end points
+   * */
+  const bool valid = std::any_of(offsets.first,
+		  	  	  	  	  	  	 offsets.first+offsets.second,
+                                 Equal_UnaryPredicate(address)) &
+                     std::any_of(end_points.first,
+                    		 	 end_points.first+end_points.second,
+                                 Equal_UnaryPredicate(address + count - 1));
+  return valid;
+}
+
 template <typename T> class MappedRegisterDataStore : public DataStore {
   bool new_data_ = false;
   T *memory_controller_;
@@ -51,12 +88,8 @@ public:
     /*
      * Returns the index of the matching address. Returns 0 otherwise.
      * */
-    for (auto pt : memory_controller_->offsets_) {
-      if (pt == address) {
-        return pt;
-      }
-    }
-    return 0;
+	const auto index = get_matching_index(address, {memory_controller_->offsets_.cbegin(), memory_controller_->offsets_.size()});
+	return (index == memory_controller_->offsets_.size()) ? 0: index;
   }
 
   bool IsNewData(void) const { return new_data_; }
@@ -97,12 +130,9 @@ public:
      * 	Only for complete writes of registers. Allow a write if the address is
      * in start positions and the end point of address + count is in end points
      * */
-    const bool valid = std::any_of(memory_controller_->offsets_.cbegin(),
-                                   memory_controller_->offsets_.cend(),
-                                   Equal_UnaryPredicate(address)) &
-                       std::any_of(memory_controller_->end_points_.cbegin(),
-                                   memory_controller_->end_points_.cend(),
-                                   Equal_UnaryPredicate(address + count));
+    const bool valid = check_location_valid(address, count,
+    		{memory_controller_->offsets_.cbegin(), memory_controller_->offsets_.size()},
+    		{memory_controller_->end_points_.cbegin(), memory_controller_->end_points_.size()});
     return valid;
   }
 

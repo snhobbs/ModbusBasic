@@ -13,7 +13,7 @@
 #include <ArrayView/ArrayView.h>
 #include <Modbus/Modbus.h>
 #include <Modbus/ModbusRtu/ModbusRtuProtocol.h>
-#include <Modbus/DataStore.h>
+#include <Modbus/DataStores/RegisterDataStore.h>
 #include <Modbus/RegisterControl.h>
 #include <gtest/gtest.h>
 #include <array>

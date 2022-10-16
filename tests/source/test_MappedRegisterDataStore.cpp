@@ -16,6 +16,47 @@
 #include <vector>
 #include <array>
 namespace TestsMappedRegisterDataStore {
+/*
+using HoldingRegisterController =
+    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<ModbusBasic_holding_register::Wrapper>>;
+*/
+  /*using InputRegisterController =
+    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<ModbusBasic_input_register::Wrapper>>;
+using SlaveBase =
+   Modbus::ProtocolRtuSlave<HoldingRegisterController,
+                             InputRegisterController>;
+*/
+
+using HoldingRegisters = ModbusBasic_holding_register::holding_register;
+using HoldingRegistersWrapper = ModbusBasic_holding_register::Wrapper;
+
+
+TEST(check_location_valid, vaid_returns_valid) {
+  const size_t size = 2;
+  using namespace Modbus;
+  std::array<size_t, 64> addresses {};
+  std::array<size_t, 64> end_points {};
+  //  length of addresses
+  for (size_t i=0; i<addresses.size(); i++) {
+    addresses[i] = i+6;
+    end_points[i] = addresses[i]+size-1;
+  }
+
+  EXPECT_TRUE(
+      check_location_valid(addresses[0], size, 
+        {addresses.cbegin(), addresses.size()}, 
+        {end_points.cbegin(), end_points.size()}));
+}
+
+TEST(get_matching_index, valid_return) {
+  using namespace Modbus;
+  std::array<size_t, 64> addresses {0, 0, 1,2,3,4,5,1};
+  const size_t value = 0xfeed;
+  const size_t index = 52;
+  addresses[index] = value;
+  EXPECT_EQ(index, get_matching_index<size_t>(value, {addresses.cbegin(), addresses.size()}));
+}
+
 TEST(DataMapTest, Serialization) {
 
 }
