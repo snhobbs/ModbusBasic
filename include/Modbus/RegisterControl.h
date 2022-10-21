@@ -16,6 +16,7 @@
 #pragma once
 #include <Modbus/Modbus.h>
 #include <Modbus/DataCommand.h>
+#include <algorithm>
 
 namespace Modbus {
 class RegisterCommand : public DataCommand {};

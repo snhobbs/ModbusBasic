@@ -269,6 +269,7 @@ enum class PacketType {
   kUnknown
 };
 
+#if 0
 class Packet {
   AddressSpace address_space;
   Function function_type;
@@ -284,6 +285,7 @@ class Packet {
    * */
   virtual void get_data_length(const uint8_t* data, const size_t size) const = 0;
 };
+#endif
 
 #if 1
 struct Frame {

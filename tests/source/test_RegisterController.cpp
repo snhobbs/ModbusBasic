@@ -11,10 +11,10 @@ TEST(RegisterControllerfields_are_sorted, blocks_in_order_passes) {
   u8_Buffer buffer_0{block_buffer_0.data(), block_buffer_0.size()};
   u8_Buffer buffer_1{block_buffer_1.data(), block_buffer_1.size()};
 
-  RegisterField rf_0{0, block_buffer_0.size()*BYTE_SIZE, &buffer_0};
-  RegisterField rf_1{rf_0.length, block_buffer_1.size()*BYTE_SIZE, &buffer_1};
+  U8Field rf_0{0, block_buffer_0.size()*BYTE_SIZE, &buffer_0};
+  U8Field rf_1{rf_0.length, block_buffer_1.size()*BYTE_SIZE, &buffer_1};
 
-  std::array<RegisterField*, 2> rf {&rf_0, &rf_1};
+  std::array<U8Field*, 2> rf {&rf_0, &rf_1};
   EXPECT_TRUE(fields_are_sorted(rf.data(), rf.size()));
 }
 
@@ -24,10 +24,10 @@ TEST(RegisterControllerfields_are_sorted, blocks_out_of_order_fails) {
   u8_Buffer buffer_0{block_buffer_0.data(), block_buffer_0.size()};
   u8_Buffer buffer_1{block_buffer_1.data(), block_buffer_1.size()};
 
-  RegisterField rf_0{0, block_buffer_0.size()*BYTE_SIZE, &buffer_0};
-  RegisterField rf_1{rf_0.length, block_buffer_1.size()*BYTE_SIZE, &buffer_1};
+  U8Field rf_0{0, block_buffer_0.size()*BYTE_SIZE, &buffer_0};
+  U8Field rf_1{rf_0.length, block_buffer_1.size()*BYTE_SIZE, &buffer_1};
 
-  std::array<RegisterField*, 2> rf {&rf_1, &rf_0}; // Swap positions of rf_0 & 1
+  std::array<U8Field*, 2> rf {&rf_1, &rf_0}; // Swap positions of rf_0 & 1
   EXPECT_FALSE(fields_are_sorted(rf.data(), rf.size()));
 }
 
@@ -42,9 +42,9 @@ class Test_RegisterController: public testing::Test {
     u8_Buffer buffer_0{block_buffer_0.data(), block_buffer_0.size()};
     u8_Buffer buffer_1{block_buffer_1.data(), block_buffer_1.size()};
 
-    RegisterField rf_0{0, block_buffer_0.size()*BYTE_SIZE, &buffer_0};
-    RegisterField rf_1{rf_0.length, block_buffer_1.size()*BYTE_SIZE, &buffer_1};
-    std::array<RegisterField*, 2> rf{&rf_0, &rf_1};
+    U8Field rf_0{0, block_buffer_0.size()*BYTE_SIZE, &buffer_0};
+    U8Field rf_1{rf_0.length, block_buffer_1.size()*BYTE_SIZE, &buffer_1};
+    std::array<U8Field*, 2> rf{&rf_0, &rf_1};
     RegisterController rc{rf.data(), rf.size()};
 
     void setUp() {}

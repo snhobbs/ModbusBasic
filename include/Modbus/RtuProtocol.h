@@ -1,6 +1,6 @@
+#pragma once
 #include "Modbus/Modbus.h"
 #include <cstddef>
-
 namespace Modbus {
 /* 
  * Packet types are in Modbus.h, return the number of bytes necessary

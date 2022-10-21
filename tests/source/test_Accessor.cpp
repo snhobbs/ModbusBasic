@@ -14,14 +14,14 @@ class Accessor_Test : public testing::Test {
  public:
   std::array<uint8_t, 32> holding_register_array;
   u8_Buffer holding_register_buffer {holding_register_array.data(), holding_register_array.size()};
-  RegisterField holding_register_bf{0, holding_register_buffer.size*BYTE_SIZE, &holding_register_buffer};
-  std::array<RegisterField*, 1> holding_register_fields {&holding_register_bf};
+  U8Field holding_register_bf{0, holding_register_buffer.size*BYTE_SIZE, &holding_register_buffer};
+  std::array<U8Field*, 1> holding_register_fields {&holding_register_bf};
   RegisterController holding_register{holding_register_fields.data(), holding_register_fields.size()};
 
   std::array<uint8_t, 32> input_register_array;
   u8_Buffer input_register_buffer {input_register_array.data(), input_register_array.size()};
-  RegisterField input_register_bf{0, input_register_buffer.size*BYTE_SIZE, &input_register_buffer};
-  std::array<RegisterField*, 1> input_register_fields {&input_register_bf};
+  U8Field input_register_bf{0, input_register_buffer.size*BYTE_SIZE, &input_register_buffer};
+  std::array<U8Field*, 1> input_register_fields {&input_register_bf};
   RegisterController input_register{input_register_fields.data(), input_register_fields.size()};
 
   static const constexpr std::array<AddressSpace, 2> kAddresses {
