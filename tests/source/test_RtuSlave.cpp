@@ -30,12 +30,14 @@ struct RtuSlaveFixture : public ::testing::Test {
   static const constexpr uint8_t kSlaveAddress = 0xad;
   static const constexpr std::size_t holding_register_count = 64;
 
-  using HoldingController = Modbus::HoldingRegisterController<Modbus::RegisterDataStore<holding_register_count>>;
-  Modbus::RegisterDataStore<holding_register_count> holding_map;
+  using HoldingController = Modbus::HoldingRegisterController<Modbus::RegisterDataStore>;
+  std::array<uint16_t, holding_register_count> registers{};
+  Modbus::RegisterDataStore holding_map{registers.data(), registers.size()};
   HoldingController holding_register_controller{&holding_map};
 
-  using InputController = Modbus::InputRegisterController<Modbus::RegisterDataStore<holding_register_count>>;
-  Modbus::RegisterDataStore<holding_register_count> input_map;
+  using InputController = Modbus::InputRegisterController<Modbus::RegisterDataStore>;
+  std::array<uint16_t, holding_register_count> input_registers{};
+  Modbus::RegisterDataStore input_map{registers.data(), registers.size()};
   InputController input_register_controller{&input_map};
 
   Modbus::ProtocolRtuSlave<HoldingController, InputController> slave{&crc16,

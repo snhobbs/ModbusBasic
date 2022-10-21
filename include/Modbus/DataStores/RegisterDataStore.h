@@ -6,31 +6,31 @@
 #include <array>
 #include <cassert>
 #include <cmath>
+#include <utility>  // pair
 
 #include "Modbus/DataStores/DataStore.h"
 
 namespace Modbus {
-template <std::size_t kSize, typename T = uint16_t>
 class RegisterDataStore : public DataStore {
-  std::array<T, kSize> data_store_{};
-  static std::size_t GetIndex(T address) { return address - GetAddressStart(); }
+  std::pair<uint16_t*, size_t> data_store_;
+  static std::size_t GetIndex(uint16_t address) { return address - GetAddressStart(); }
 
  public:
-  RegisterDataStore() {}
-  static constexpr bool ReadLocationValid(std::size_t address, std::size_t count) {
+  RegisterDataStore(uint16_t* data, const size_t length) : data_store_{data, length}{}
+  bool ReadLocationValid(std::size_t address, std::size_t count) const {
     return IsAddressValid(address) && IsAddressValid(address + count -1);
   }
-  static constexpr bool WriteLocationValid(std::size_t address, std::size_t count) {
+  bool WriteLocationValid(std::size_t address, std::size_t count) const {
     return ReadLocationValid(address, count);
   }
-  static constexpr bool IsAddressValid(std::size_t address) {
+  bool IsAddressValid(std::size_t address) const {
     return address + 1 <= GetAddressStart() + GetSize();
   }
-  static std::size_t size(void) {return GetSize();}
-  static constexpr std::size_t GetSize(void) { return kSize; }
-  static constexpr std::size_t GetRegisterByteSize(void) { return sizeof(T); }
-  T GetRegister(std::size_t address) const {
-    return data_store_[GetIndex(address)];
+  std::size_t size(void) {return GetSize();}
+  std::size_t GetSize(void) const { return data_store_.second; }
+  static constexpr std::size_t GetRegisterByteSize(void) { return sizeof(uint16_t); }
+  uint16_t GetRegister(std::size_t address) const {
+    return data_store_.first[GetIndex(address)];
   }
 
   void GetRegisters(const std::size_t address, const std::size_t register_count, ArrayView<uint8_t>* data_view) const {
@@ -43,8 +43,8 @@ class RegisterDataStore : public DataStore {
     }
   }
 
-  void SetRegister(std::size_t address, T value) {
-    data_store_[GetIndex(address)] = value;
+  void SetRegister(std::size_t address, uint16_t value) {
+    data_store_.first[GetIndex(address)] = value;
   }
 
   void SetRegisters(std::size_t address, std::size_t register_count, const ArrayView<const uint8_t>& data_view) {

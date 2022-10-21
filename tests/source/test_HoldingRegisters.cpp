@@ -27,7 +27,8 @@ namespace ModbusTests {
 static const constexpr std::size_t kRegisters = 69;
 
 struct HoldingRegisterDataFixture : public ::testing::Test {
-  Modbus::RegisterDataStore<kRegisters> dc{};
+  std::array<uint16_t, kRegisters> registers{};
+  Modbus::RegisterDataStore dc{registers.data(), registers.size()};
   void SetUp(void) {}
   void TearDown(void) {}
 };
@@ -41,7 +42,8 @@ TEST_F(HoldingRegisterDataFixture, RegisterReadWrite) {
 }
 
 struct HoldingRegisterControllerFixture : public ::testing::Test {
-  Modbus::RegisterDataStore<kRegisters> dc{};
+  std::array<uint16_t, kRegisters> registers{};
+  Modbus::RegisterDataStore dc{registers.data(), registers.size()};
   Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
 };
 
@@ -73,7 +75,8 @@ TEST_F(HoldingRegisterControllerFixture, RegisterReadWriteAddress) {
 }
 
 struct ValidateHoldingRegisterFramesFixture: public ::testing::Test {
-  Modbus::RegisterDataStore<kRegisters> dc{};
+  std::array<uint16_t, kRegisters> registers{};
+  Modbus::RegisterDataStore dc{registers.data(), registers.size()};
   Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
   std::array<uint8_t, 64> buffer;
   ArrayView<uint8_t> frame_data{buffer.size(), buffer.data()};
