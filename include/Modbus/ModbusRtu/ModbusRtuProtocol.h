@@ -13,6 +13,7 @@
 #include <Modbus/Modbus.h>
 #include <Modbus/RegisterControl.h>
 #include <Utilities/TypeConversion.h>
+
 #include <cstdint>
 
 #define INTEGER_SIZE sizeof(uint16_t)
@@ -20,52 +21,50 @@ namespace Modbus {
 using Crc16 = uint16_t (*)(const ArrayView<uint8_t> &, std::size_t);
 // using Timer = uint32_t (*)(void); //  Returns the system time in ms
 
-inline constexpr std::size_t GetRequiredPacketSize(const Modbus::Frame &packet) {
+inline constexpr std::size_t GetRequiredPacketSize(
+    const Modbus::Frame &packet) {
   return Command::kHeaderLength + packet.data_length + Command::kFooterLength;
 }
 
 inline int32_t CalculateMetaDataBytesRemaining(const Function function) {
   if (function == Function::kReadMultipleHoldingRegisters) {
     return ReadMultipleRegistersCommandBase::CommandPacket::kPacketSize;
-  }
-  else if (function == Function::kReadInputRegisters) {
+  } else if (function == Function::kReadInputRegisters) {
     return ReadMultipleRegistersCommandBase::CommandPacket::kPacketSize;
-  }
-  else if (function == Function::kWriteSingleHoldingRegister) {
+  } else if (function == Function::kWriteSingleHoldingRegister) {
     return WriteSingleHoldingRegisterCommand::CommandPacket::kValueStart;
-  }
-  else if (function == Function::kWriteMultipleHoldingRegisters) {
+  } else if (function == Function::kWriteMultipleHoldingRegisters) {
     return WriteMultipleHoldingRegistersCommand::CommandPacket::kValueStart;
   }
   return 0;
-      //  Function::kReadExceptionStatus,
-      //  Function::kDiagnostic,
-      //  Function::kGetComEventCounter,
-      //  Function::kGetComEventLog,
-      //  Function::kReportSlaveId,
-      //  Function::kReadFileRecord,
-      //  Function::kWriteFileRecord,
-      //  Function::kMaskWriteRegister,
-      //  Function::kReadWriteMultipleRegisters,
-      //  Function::kReadFifoQueue,
-      //  Function::kReadDeviceIdentification,
+  //  Function::kReadExceptionStatus,
+  //  Function::kDiagnostic,
+  //  Function::kGetComEventCounter,
+  //  Function::kGetComEventLog,
+  //  Function::kReportSlaveId,
+  //  Function::kReadFileRecord,
+  //  Function::kWriteFileRecord,
+  //  Function::kMaskWriteRegister,
+  //  Function::kReadWriteMultipleRegisters,
+  //  Function::kReadFifoQueue,
+  //  Function::kReadDeviceIdentification,
 }
 
-inline int32_t CalculateBytesRemaining(const Frame& frame) {
+inline int32_t CalculateBytesRemaining(const Frame &frame) {
   const auto function = frame.function;
   std::size_t bytes = 0;
   if (function == Function::kReadMultipleHoldingRegisters) {
     bytes = 0;
-  }
-  else if (function == Function::kReadInputRegisters) {
+  } else if (function == Function::kReadInputRegisters) {
     bytes = 0;
-  }
-  else if (function == Function::kWriteSingleHoldingRegister) {
+  } else if (function == Function::kWriteSingleHoldingRegister) {
     bytes = sizeof(uint16_t);
-  }
-  else if (function == Function::kWriteMultipleHoldingRegisters) {
-    bytes = frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::kNumberOfDataBytes];// << 8 | 
-      //frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::kNumberOfDataBytes]; 
+  } else if (function == Function::kWriteMultipleHoldingRegisters) {
+    bytes =
+        frame.data_array
+            [WriteMultipleHoldingRegistersCommand::CommandPacket::
+                 kNumberOfDataBytes];  // << 8 |
+                                       // frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::kNumberOfDataBytes];
   }
   return bytes;
 }
@@ -81,65 +80,64 @@ class ReadContext {
     state_ = PacketState::kAddress;
   }
 
-  bool PacketReceived(void) const {
-    return state_ == PacketState::kDone;
-  }
+  bool PacketReceived(void) const { return state_ == PacketState::kDone; }
 
-  void ProcessCharacter(Frame* p_frame, const uint8_t pt) {
+  void ProcessCharacter(Frame *p_frame, const uint8_t pt) {
     bytes_to_read_--;
     switch (state_) {
-    case PacketState::kAddress:
-      p_frame->address = pt;
-      state_ = PacketState::kFunction;
-      break;
-    case PacketState::kFunction:
-      if (FunctionCodeIsValid(pt)) {
-        p_frame->function = GetFunction(pt);
-        state_ = PacketState::kMeta;
-        bytes_to_read_ = CalculateMetaDataBytesRemaining(p_frame->function);
-      } else {
-        Reset();
-      }
-      break;
-    case PacketState::kMeta:
-      //  This contains information on the length or not depending on function
-      p_frame->data_array[p_frame->data_length++] = pt;
-      if (bytes_to_read_ <= 0) {
-        bytes_to_read_ = CalculateBytesRemaining(*p_frame) + Command::kFooterLength;
-        state_ = PacketState::kData;
-        if (bytes_to_read_ == 0) {
+      case PacketState::kAddress:
+        p_frame->address = pt;
+        state_ = PacketState::kFunction;
+        break;
+      case PacketState::kFunction:
+        if (FunctionCodeIsValid(pt)) {
+          p_frame->function = GetFunction(pt);
+          state_ = PacketState::kMeta;
+          bytes_to_read_ = CalculateMetaDataBytesRemaining(p_frame->function);
+        } else {
+          Reset();
+        }
+        break;
+      case PacketState::kMeta:
+        //  This contains information on the length or not depending on function
+        p_frame->data_array[p_frame->data_length++] = pt;
+        if (bytes_to_read_ <= 0) {
+          bytes_to_read_ =
+              CalculateBytesRemaining(*p_frame) + Command::kFooterLength;
+          state_ = PacketState::kData;
+          if (bytes_to_read_ == 0) {
+            state_ = PacketState::kDone;
+          }
+        }
+        break;
+
+      case PacketState::kData:
+        //  Send the data to the function controller, keep reading until it says
+        //  its done, character space timeout occurs, or an illegal value is
+        //  entered
+        p_frame->data_array[p_frame->data_length++] = pt;
+        if (bytes_to_read_ <= 0) {
           state_ = PacketState::kDone;
         }
-      }
-      break;
-
-    case PacketState::kData:
-      //  Send the data to the function controller, keep reading until it says
-      //  its done, character space timeout occurs, or an illegal value is entered
-      p_frame->data_array[p_frame->data_length++] = pt;
-      if (bytes_to_read_ <= 0) {
-        state_ = PacketState::kDone;
-      }
-      break;
-    case PacketState::kDone:
-      assert(0);
-      Reset();
-      break;
-    default:
-      assert(0);
-      Reset();
+        break;
+      case PacketState::kDone:
+        assert(0);
+        Reset();
+        break;
+      default:
+        assert(0);
+        Reset();
     }
   }
 };
 
 class ProtocolRtu : public Protocol {
-  static const constexpr uint32_t kHeaderLength =
-      Command::kHeaderLength;
+  static const constexpr uint32_t kHeaderLength = Command::kHeaderLength;
   static const constexpr uint32_t kFooterLength = Command::kFooterLength;
   static const constexpr uint32_t kAddressLocation =
-    Command::CommandPacket::kSlaveAddress;
+      Command::CommandPacket::kSlaveAddress;
   static const constexpr uint32_t kFunctionLocation =
-    Command::CommandPacket::kFunction;
+      Command::CommandPacket::kFunction;
 
  protected:
   const Crc16 crc16_;
@@ -149,8 +147,7 @@ class ProtocolRtu : public Protocol {
   bool FrameCrcIsValid(const Modbus::Frame &frame) const {
     std::array<uint8_t, 256> data{};
     data[kAddressLocation] = frame.address;
-    data[kFunctionLocation] =
-        static_cast<uint16_t>(frame.function);
+    data[kFunctionLocation] = static_cast<uint16_t>(frame.function);
     for (std::size_t i = 0; i < std::min(frame.data_length, data.size()); i++) {
       data[i + kHeaderLength] = frame.data_array[i];
     }
@@ -169,7 +166,6 @@ class ProtocolRtu : public Protocol {
     return true;
   }
 
-
   int32_t Frame(const Modbus::Frame &packet,
                 ArrayView<uint8_t> *frame_buffer) const {
     assert(frame_buffer->size() >= GetRequiredPacketSize(packet));
@@ -186,20 +182,27 @@ class ProtocolRtu : public Protocol {
 
     const std::size_t crc_start = GetRequiredPacketSize(packet) - sizeof(crc);
     frame_buffer->operator[](crc_start) = Utilities::GetByte(crc, 1);  //  MSB
-    frame_buffer->operator[](crc_start + 1) = Utilities::GetByte(crc, 0);  //  LSB
+    frame_buffer->operator[](crc_start + 1) =
+        Utilities::GetByte(crc, 0);  //  LSB
     return 0;
   }
-  int32_t FrameResponse(const Modbus::Frame &packet, Modbus::Response* response) const {
-	response->operator[](Command::ResponsePacket::kSlaveAddress) = static_cast<uint8_t>(packet.address);
-	assert(response->operator[](Command::ResponsePacket::kSlaveAddress) == static_cast<uint8_t>(packet.address));
+  int32_t FrameResponse(const Modbus::Frame &packet,
+                        Modbus::Response *response) const {
+    response->operator[](Command::ResponsePacket::kSlaveAddress) =
+        static_cast<uint8_t>(packet.address);
+    assert(response->operator[](Command::ResponsePacket::kSlaveAddress) ==
+           static_cast<uint8_t>(packet.address));
 
-	response->operator[](Command::ResponsePacket::kFunction) = static_cast<uint8_t>(packet.function);
-	assert(response->operator[](Command::ResponsePacket::kFunction) == static_cast<uint8_t>(packet.function));
-    const uint16_t crc = crc16_(response->GetArrayView(), response->GetLength());
+    response->operator[](Command::ResponsePacket::kFunction) =
+        static_cast<uint8_t>(packet.function);
+    assert(response->operator[](Command::ResponsePacket::kFunction) ==
+           static_cast<uint8_t>(packet.function));
+    const uint16_t crc =
+        crc16_(response->GetArrayView(), response->GetLength());
     response->SetLength(response->GetLength() + sizeof(uint16_t));
     const std::size_t crc_start = response->GetLength() - sizeof(uint16_t);
 
-    response->operator[](crc_start) = Utilities::GetByte(crc, 1);  //  LSB
+    response->operator[](crc_start) = Utilities::GetByte(crc, 1);      //  LSB
     response->operator[](crc_start + 1) = Utilities::GetByte(crc, 0);  //  MSB
     return 0;
   }
@@ -218,4 +221,3 @@ class ProtocolRtu : public Protocol {
   }
 };
 }  // namespace Modbus
-

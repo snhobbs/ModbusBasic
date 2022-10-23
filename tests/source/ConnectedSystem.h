@@ -16,13 +16,15 @@
 #include <Modbus/ModbusRtu/ModbusRtuMaster.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <RingBuffer/RingBuffer.h>
+
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
 #include <vector>
-#include "SlaveDeviceIdentifier.h"
+
 #include "Crc.h"
+#include "SlaveDeviceIdentifier.h"
 
 class ConnectedSystem {
   static const constexpr SlaveDeviceIdentifier identity{};

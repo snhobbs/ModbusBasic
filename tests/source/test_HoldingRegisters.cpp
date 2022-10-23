@@ -2,26 +2,27 @@
  * ----------------------------------------------------------------------
  * Project:      Modbus
  * Title:        test_HoldingRegisters.cpp
- * Description:  
+ * Description:
  *
  * $Date:        13. May 2020
  * $Revision:    V.1.0.1
  * ----------------------------------------------------------------------
  */
 
-#include "Crc.h"
+#include <Modbus/DataStores/RegisterDataStore.h>
 #include <Modbus/Modbus.h>
 #include <Modbus/RegisterControl.h>
-#include <Modbus/DataStores/RegisterDataStore.h>
+
+#include "Crc.h"
 //#include <Modbus/ModbusRtu/ModbusRtu.h>
 #include <ArrayView/ArrayView.h>
 #include <gtest/gtest.h>
+
 #include <array>
-#include <iostream>
-#include <vector>
 #include <cassert>
 #include <cstdint>
-
+#include <iostream>
+#include <vector>
 
 namespace ModbusTests {
 static const constexpr std::size_t kRegisters = 69;
@@ -74,7 +75,7 @@ TEST_F(HoldingRegisterControllerFixture, RegisterReadWriteAddress) {
   }
 }
 
-struct ValidateHoldingRegisterFramesFixture: public ::testing::Test {
+struct ValidateHoldingRegisterFramesFixture : public ::testing::Test {
   std::array<uint16_t, kRegisters> registers{};
   Modbus::RegisterDataStore dc{registers.data(), registers.size()};
   Modbus::HoldingRegisterController<typeof(dc)> cc{&dc};
@@ -83,26 +84,29 @@ struct ValidateHoldingRegisterFramesFixture: public ::testing::Test {
 
   const uint8_t kSlaveAddress = 0x11;
   const uint16_t kAddressStart = 0x0a;
-  Modbus::Frame frame{kSlaveAddress, Modbus::Function::kNone, frame_data.size(), frame_data};
+  Modbus::Frame frame{kSlaveAddress, Modbus::Function::kNone, frame_data.size(),
+                      frame_data};
   void SetUp(void) {}
   void TearDown(void) {}
   ValidateHoldingRegisterFramesFixture(void) {}
 };
 
-TEST_F(ValidateHoldingRegisterFramesFixture, ValidateReadMultipleHoldingRegistersCommand) {
+TEST_F(ValidateHoldingRegisterFramesFixture,
+       ValidateReadMultipleHoldingRegistersCommand) {
   const uint16_t register_count = 12;
   Modbus::ReadMultipleHoldingRegistersCommand::FillFrame(
       kAddressStart, register_count, &frame);
   EXPECT_TRUE(Modbus::Exception::kAck == cc.ValidateFrame(frame));
 }
-TEST_F(ValidateHoldingRegisterFramesFixture, ValidateWriteSingleHoldingRegisterFrame) {
+TEST_F(ValidateHoldingRegisterFramesFixture,
+       ValidateWriteSingleHoldingRegisterFrame) {
   Modbus::WriteSingleHoldingRegisterCommand::FillFrame(kAddressStart, 0xff,
                                                        &frame);
   const Modbus::Exception exception = cc.ValidateFrame(frame);
   EXPECT_TRUE(Modbus::Exception::kAck == exception);
 }
 TEST_F(ValidateHoldingRegisterFramesFixture,
-             ValidateWriteMultipleHoldingRegistersFrame) {
+       ValidateWriteMultipleHoldingRegistersFrame) {
   const uint16_t register_count = 16;
   constexpr std::size_t kRegisterBytes = register_count * sizeof(uint16_t);
   std::array<uint8_t, kRegisterBytes> write_data_buffer{};
@@ -121,31 +125,37 @@ TEST_F(ValidateHoldingRegisterFramesFixture,
 }
 
 TEST_F(ValidateHoldingRegisterFramesFixture,
-             ReadFrameReadFrameReadMultipleHoldingRegisters) {
+       ReadFrameReadFrameReadMultipleHoldingRegisters) {
   Modbus::Response response;
   const uint16_t register_count = 12;
   Modbus::ReadMultipleHoldingRegistersCommand::FillFrame(
       kAddressStart, register_count, &frame);
   EXPECT_TRUE(Modbus::Exception::kAck == cc.ValidateFrame(frame));
   cc.ReadFrame(frame, &response);
-  EXPECT_EQ(register_count * sizeof(uint16_t), Modbus::ReadMultipleHoldingRegistersCommand::ReadResponseByteCount(response.GetArrayView()));
+  EXPECT_EQ(register_count * sizeof(uint16_t),
+            Modbus::ReadMultipleHoldingRegistersCommand::ReadResponseByteCount(
+                response.GetArrayView()));
 }
 
 TEST_F(ValidateHoldingRegisterFramesFixture,
-             ReadFrameWriteSingleHoldingRegister) {
-	const uint16_t kValue = 0xdead;
+       ReadFrameWriteSingleHoldingRegister) {
+  const uint16_t kValue = 0xdead;
   Modbus::Response response;
   Modbus::WriteSingleHoldingRegisterCommand::FillFrame(kAddressStart, kValue,
                                                        &frame);
   const Modbus::Exception exception = cc.ValidateFrame(frame);
   EXPECT_TRUE(Modbus::Exception::kAck == exception);
   cc.ReadFrame(frame, &response);
-  EXPECT_EQ(kAddressStart, Modbus::WriteSingleHoldingRegisterCommand::ReadResponseAddressStart(response.GetArrayView()));
-  EXPECT_EQ(kValue, Modbus::WriteSingleHoldingRegisterCommand::ReadResponseSetting(response.GetArrayView()));
+  EXPECT_EQ(kAddressStart,
+            Modbus::WriteSingleHoldingRegisterCommand::ReadResponseAddressStart(
+                response.GetArrayView()));
+  EXPECT_EQ(kValue,
+            Modbus::WriteSingleHoldingRegisterCommand::ReadResponseSetting(
+                response.GetArrayView()));
 }
 
 TEST_F(ValidateHoldingRegisterFramesFixture,
-             ReadFrameWriteMultipleHoldingRegisters) {
+       ReadFrameWriteMultipleHoldingRegisters) {
   Modbus::Response response;
   const uint16_t register_count = 16;
   std::array<uint16_t, register_count> write_data_buffer{};
@@ -157,7 +167,13 @@ TEST_F(ValidateHoldingRegisterFramesFixture,
   const Modbus::Exception exception = cc.ValidateFrame(frame);
   EXPECT_TRUE(Modbus::Exception::kAck == exception);
   cc.ReadFrame(frame, &response);
-  EXPECT_EQ(kAddressStart, Modbus::WriteMultipleHoldingRegistersCommand::ReadResponseAddressStart(response.GetArrayView()));
-  EXPECT_EQ(register_count, Modbus::WriteMultipleHoldingRegistersCommand::ReadResponseRegisterCount(response.GetArrayView()));
+  EXPECT_EQ(
+      kAddressStart,
+      Modbus::WriteMultipleHoldingRegistersCommand::ReadResponseAddressStart(
+          response.GetArrayView()));
+  EXPECT_EQ(
+      register_count,
+      Modbus::WriteMultipleHoldingRegistersCommand::ReadResponseRegisterCount(
+          response.GetArrayView()));
 }
 }  // namespace ModbusTests

@@ -10,21 +10,23 @@
  */
 
 #pragma once
-#include "LinuxModbusTools.h"
-#include "HoldingRegisterMappedDataStore.h"
-#include "InputRegisterMappedDataStore.h"
 #include <Modbus/../../examples/posix/PosixSerial.h>
-#include <Modbus/Modbus.h>
 #include <Modbus/BitControl.h>
 #include <Modbus/DataStore.h>
+#include <Modbus/MappedRegisterDataStore.h>
+#include <Modbus/Modbus.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <Modbus/RegisterControl.h>
-#include <Modbus/MappedRegisterDataStore.h>
 #include <Utilities/TypeConversion.h>
+#include <sys/time.h>
+
 #include <cassert>
 #include <cstdint>
-#include <sys/time.h>
 #include <vector>
+
+#include "HoldingRegisterMappedDataStore.h"
+#include "InputRegisterMappedDataStore.h"
+#include "LinuxModbusTools.h"
 
 inline const constexpr std::size_t kCoilCount = 1;
 using CoilController =
@@ -32,10 +34,10 @@ using CoilController =
 using DiscreteInputController =
     Modbus::DiscreteInputController<Modbus::BitFieldDataStore<kCoilCount>>;
 
-using HoldingRegisterController =
-    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<HoldingRegistersWrapper>>;
-using InputRegisterController =
-    Modbus::InputRegisterController<Modbus::MappedRegisterDataStore<InputRegistersWrapper>>;
+using HoldingRegisterController = Modbus::HoldingRegisterController<
+    Modbus::MappedRegisterDataStore<HoldingRegistersWrapper>>;
+using InputRegisterController = Modbus::InputRegisterController<
+    Modbus::MappedRegisterDataStore<InputRegistersWrapper>>;
 using SlaveBase =
     Modbus::ProtocolRtuSlave<CoilController, HoldingRegisterController,
                              DiscreteInputController, InputRegisterController>;
@@ -44,11 +46,13 @@ class LinuxSlave : public SlaveBase {
  public:
   InputRegisters input_map_;
   InputRegistersWrapper input_map_controller_{&input_map_};
-  Modbus::MappedRegisterDataStore<InputRegistersWrapper> input_register_data_store_{&input_map_controller_};
+  Modbus::MappedRegisterDataStore<InputRegistersWrapper>
+      input_register_data_store_{&input_map_controller_};
 
   HoldingRegisters holding_map_;
   HoldingRegistersWrapper holding_map_controller_{&holding_map_};
-  Modbus::MappedRegisterDataStore<HoldingRegistersWrapper> holding_register_data_store_{&holding_map_controller_};
+  Modbus::MappedRegisterDataStore<HoldingRegistersWrapper>
+      holding_register_data_store_{&holding_map_controller_};
 
   CoilController coils_;
   HoldingRegisterController hregs_{&holding_register_data_store_};
@@ -61,7 +65,7 @@ class LinuxSlave : public SlaveBase {
   static const constexpr speed_t kBaudRate = B9600;
   static const constexpr int kCharacterClocks = 8 + 1;
 
-  const char *const device_name; // = "/tmp/ttyp0";
+  const char *const device_name;  // = "/tmp/ttyp0";
   timeval last_character_time_ = GetTimeStamp();
   static const constexpr int64_t kFrameDelay_us =
       (1e6 * (kCharacterClocks * 3.5)) / (static_cast<double>(kBaudRateHz));
@@ -77,9 +81,9 @@ class LinuxSlave : public SlaveBase {
   void ProcessPacket(void) {
     ProcessMessage();
 
-    const auto& frame = GetFrameIn();
+    const auto &frame = GetFrameIn();
     Modbus::PrintPacketData(frame);
-      printf("\n");
+    printf("\n");
 #if 0
     if (frame.address == 246 || frame.function == Modbus::Function::kWriteMultipleHoldingRegisters) {
       printf("\n");
@@ -106,8 +110,9 @@ class LinuxSlave : public SlaveBase {
   }
 
   bool RxCharacterTimeout(const timeval &timestamp) const {
-    const bool character_timeout = GetMicroSecondsSince(last_character_time_, timestamp) >=
-           10 * kFrameDelay_us;
+    const bool character_timeout =
+        GetMicroSecondsSince(last_character_time_, timestamp) >=
+        10 * kFrameDelay_us;
     return character_timeout;
   }
 
@@ -133,7 +138,7 @@ class LinuxSlave : public SlaveBase {
   }
 
   explicit LinuxSlave(const char *const port)
-      : SlaveBase{&crc16, kSlaveAddress, coils_,
-                  hregs_, dins_, inregs_},
-        device_name{port}, iodev_{port, kBaudRate} {}
+      : SlaveBase{&crc16, kSlaveAddress, coils_, hregs_, dins_, inregs_},
+        device_name{port},
+        iodev_{port, kBaudRate} {}
 };

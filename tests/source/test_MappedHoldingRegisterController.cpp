@@ -2,51 +2,53 @@
  * ----------------------------------------------------------------------
  * Project:      Modbus
  * Title:        test_MappedHoldingRegisterController.cpp
- * Description:  
+ * Description:
  *
  * $Date:        13. May 2020
  * $Revision:    V.1.0.1
  * ----------------------------------------------------------------------
  */
 
-#include "TestHoldingRegisterMappedDataStore.h"
 #include <Modbus/MappedRegisterDataStore.h>
 #include <Modbus/RegisterControl.h>
 #include <gtest/gtest.h>
+
 #include <array>
+#include <cstdio>
 #include <iostream>
 #include <vector>
-#include <cstdio>
 
+#include "TestHoldingRegisterMappedDataStore.h"
 
-using HoldingRegisterController =
-    Modbus::HoldingRegisterController<Modbus::MappedRegisterDataStore<ModbusBasic_holding_register::Wrapper>>;
+using HoldingRegisterController = Modbus::HoldingRegisterController<
+    Modbus::MappedRegisterDataStore<ModbusBasic_holding_register::Wrapper>>;
 using HoldingRegisterWrapper = ModbusBasic_holding_register::Wrapper;
-
 
 TEST(HoldingRegister, GetMap) {
   ModbusBasic_holding_register::holding_register data_store;
   HoldingRegisterWrapper map{&data_store};
-  Modbus::MappedRegisterDataStore<HoldingRegisterWrapper> holding_register_data_store_{&map};
+  Modbus::MappedRegisterDataStore<HoldingRegisterWrapper>
+      holding_register_data_store_{&map};
 }
 
-class MappedHoldingRegisterControllerFixture: public ::testing::Test {
+class MappedHoldingRegisterControllerFixture : public ::testing::Test {
  public:
   ModbusBasic_holding_register::holding_register data_store;
   ModbusBasic_holding_register::Wrapper map{&data_store};
-  Modbus::MappedRegisterDataStore<HoldingRegisterWrapper> holding_register_data_store_{&map};
+  Modbus::MappedRegisterDataStore<HoldingRegisterWrapper>
+      holding_register_data_store_{&map};
   HoldingRegisterController controller{&holding_register_data_store_};
 };
 
-TEST_F(MappedHoldingRegisterControllerFixture, HoldingRegisterController_WriteLocationValid_ReturnsValid) {
+TEST_F(MappedHoldingRegisterControllerFixture,
+       HoldingRegisterController_WriteLocationValid_ReturnsValid) {
   /*
    * Pass in a valid location, check it returns valid
    * */
-  for (size_t i=0; i<map.end_points_.size(); i++) {
-    const auto length = map.end_points_[i]-map.offsets_[i]+1;
+  for (size_t i = 0; i < map.end_points_.size(); i++) {
+    const auto length = map.end_points_[i] - map.offsets_[i] + 1;
     const auto address = map.offsets_[i];
-    const bool valid = controller.WriteLocationValid(
-      address, length);
+    const bool valid = controller.WriteLocationValid(address, length);
     //  printf("\n%d: %d %d\n", valid, address, length);
     EXPECT_TRUE(valid);
   }

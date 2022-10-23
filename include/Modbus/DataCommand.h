@@ -12,20 +12,23 @@
  */
 
 #pragma once
-#include <Modbus/Modbus.h>
 #include <ArrayView/ArrayView.h>
+#include <Modbus/Modbus.h>
 #include <Utilities/CommonTypes.h>
 #include <Utilities/TypeConversion.h>
+
 #include <cstdint>
 namespace Modbus {
 class DataCommand : public Command {
   static const constexpr std::size_t kIntegerSize = sizeof(uint16_t);
+
  public:
   struct CommandPacket {
     static const constexpr std::size_t kDataAddressStart = 0;
     static const constexpr std::size_t kDataAddressEnd =
         kDataAddressStart + kIntegerSize - 1;
   };
+
  public:
   static uint16_t ReadAddressStart(const ArrayView<uint8_t> &data_array) {
     return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{

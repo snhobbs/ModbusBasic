@@ -1,5 +1,6 @@
-#include "Modbus/Modbus.h"
 #include <gtest/gtest.h>
+
+#include "Modbus/Modbus.h"
 
 using namespace Modbus;
 
@@ -19,12 +20,16 @@ TEST(Modbus, GetFunction_InvalidReturnsError) {
   EXPECT_EQ(Modbus::Function::kNone, function);
 }
 
-TEST(Modbus, GetAddressSpaceFromFunction_WriteSingleHoldingRegisterReturnsHoldingRegister) {
-  const auto address = GetAddressSpaceFromFunction(Modbus::Function::kWriteSingleHoldingRegister);
+TEST(
+    Modbus,
+    GetAddressSpaceFromFunction_WriteSingleHoldingRegisterReturnsHoldingRegister) {
+  const auto address = GetAddressSpaceFromFunction(
+      Modbus::Function::kWriteSingleHoldingRegister);
   EXPECT_EQ(address, Modbus::AddressSpace::kHoldingRegister);
 }
 
-TEST(Modbus, GetAddressSpaceFromFunction_SupportedFunctionsDoesNotReturnUnmapped) {
+TEST(Modbus,
+     GetAddressSpaceFromFunction_SupportedFunctionsDoesNotReturnUnmapped) {
   for (auto& pt : GetSupportedFunctions()) {
     const Modbus::AddressSpace address = GetAddressSpaceFromFunction(pt);
     EXPECT_NE(address, AddressSpace::kUnmapped);

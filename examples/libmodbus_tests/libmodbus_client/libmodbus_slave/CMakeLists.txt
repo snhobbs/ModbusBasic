@@ -16,4 +16,3 @@ target_link_libraries( ${PROJECT_NAME} modbus)
 
 target_include_directories(${PROJECT_NAME} PRIVATE /usr/include/modbus )
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/..)
-

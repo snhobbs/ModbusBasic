@@ -12,10 +12,10 @@
  * ----------------------------------------------------------------------
  */
 
-
 #pragma once
-#include <Modbus/Modbus.h>
 #include <Modbus/DataCommand.h>
+#include <Modbus/Modbus.h>
+
 #include <algorithm>
 
 namespace Modbus {
@@ -27,38 +27,43 @@ class WriteSingleHoldingRegisterCommand : public RegisterCommand {
   struct CommandPacket {
     static const constexpr std::size_t kValueStart =
         DataCommand::CommandPacket::kDataAddressEnd + 1;
-    static const constexpr std::size_t kPacketSize = kValueStart + sizeof(uint16_t);
+    static const constexpr std::size_t kPacketSize =
+        kValueStart + sizeof(uint16_t);
   };
   struct ResponsePacket {
     static const constexpr std::size_t kDataAddress =
         DataCommand::ResponsePacket::kHeaderEnd + 1;
-    static const constexpr std::size_t kValueStart = kDataAddress + sizeof(uint16_t);
-    static const constexpr std::size_t kPacketSize = kValueStart + sizeof(uint16_t);
+    static const constexpr std::size_t kValueStart =
+        kDataAddress + sizeof(uint16_t);
+    static const constexpr std::size_t kPacketSize =
+        kValueStart + sizeof(uint16_t);
   };
   static uint16_t ReadSetting(const ArrayView<uint8_t> &data_array) {
     return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
         sizeof(uint16_t), &data_array[CommandPacket::kValueStart]});
   }
   static uint16_t ReadResponseSetting(const ArrayView<uint8_t> &data_array) {
-     return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
-    sizeof(uint16_t), &data_array[ResponsePacket::kValueStart]});
-   }
-   static uint16_t ReadResponseAddressStart(const ArrayView<uint8_t> &data_array) {
-      return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
-          sizeof(uint16_t), &data_array[ResponsePacket::kDataAddress]});
-   }
+    return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
+        sizeof(uint16_t), &data_array[ResponsePacket::kValueStart]});
+  }
+  static uint16_t ReadResponseAddressStart(
+      const ArrayView<uint8_t> &data_array) {
+    return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
+        sizeof(uint16_t), &data_array[ResponsePacket::kDataAddress]});
+  }
   static void FillResponseHeader(const uint8_t slave_address,
                                  const uint16_t address, const uint16_t value,
                                  Response *response) {
     response->operator[](DataCommand::ResponsePacket::kSlaveAddress) =
         slave_address;
     response->operator[](DataCommand::ResponsePacket::kFunction) =
-    		static_cast<uint8_t>(kFunction);
+        static_cast<uint8_t>(kFunction);
     response->operator[](ResponsePacket::kDataAddress) =
         Utilities::GetByte(address, 1);
     response->operator[](ResponsePacket::kDataAddress + 1) =
         Utilities::GetByte(address, 0);
-    response->operator[](ResponsePacket::kValueStart) = Utilities::GetByte(value, 1);
+    response->operator[](ResponsePacket::kValueStart) =
+        Utilities::GetByte(value, 1);
     response->operator[](ResponsePacket::kValueStart + 1) =
         Utilities::GetByte(value, 0);
 
@@ -74,8 +79,10 @@ class WriteSingleHoldingRegisterCommand : public RegisterCommand {
         Utilities::GetByte(address, 1);
     frame->data_array[DataCommand::CommandPacket::kDataAddressStart + 1] =
         Utilities::GetByte(address, 0);
-    frame->data_array[CommandPacket::kValueStart] = Utilities::GetByte(value, 1);
-    frame->data_array[CommandPacket::kValueStart + 1] = Utilities::GetByte(value, 0);
+    frame->data_array[CommandPacket::kValueStart] =
+        Utilities::GetByte(value, 1);
+    frame->data_array[CommandPacket::kValueStart + 1] =
+        Utilities::GetByte(value, 0);
     frame->data_length = frame_size;
     return 0;
   }
@@ -99,13 +106,12 @@ class ReadMultipleRegistersCommandBase : public RegisterCommand {
   }
   static uint8_t ReadResponseByteCount(const ArrayView<uint8_t> &data_array) {
     return data_array[ResponsePacket::kNumberOfBytes];
-   }
+  }
 
  protected:
   static void FillResponseHeaderBase(const uint8_t slave_address,
                                      const std::size_t register_count,
-                                     Response *response,
-                                     Function function) {
+                                     Response *response, Function function) {
     response->operator[](DataCommand::ResponsePacket::kSlaveAddress) =
         slave_address;
     response->operator[](DataCommand::ResponsePacket::kFunction) =
@@ -130,7 +136,6 @@ class ReadMultipleRegistersCommandBase : public RegisterCommand {
     frame->data_length = CommandPacket::kPacketSize;
     return 0;
   }
-
 };
 
 class ReadMultipleHoldingRegistersCommand
@@ -152,8 +157,7 @@ class ReadMultipleHoldingRegistersCommand
 };
 
 class ReadInputRegistersCommand : public ReadMultipleRegistersCommandBase {
-  static const Function kFunction =
-      Function::kReadInputRegisters;
+  static const Function kFunction = Function::kReadInputRegisters;
 
  public:
   static int32_t FillFrame(const uint16_t address, const uint16_t value,
@@ -170,7 +174,8 @@ class ReadInputRegistersCommand : public ReadMultipleRegistersCommandBase {
 
 class WriteMultipleHoldingRegistersCommand : public RegisterCommand {
  public:
-  static const constexpr auto kFunction = Function::kWriteMultipleHoldingRegisters;
+  static const constexpr auto kFunction =
+      Function::kWriteMultipleHoldingRegisters;
   struct CommandPacket {
     static const constexpr std::size_t kRegisterCount =
         DataCommand::CommandPacket::kDataAddressEnd + 1;
@@ -188,24 +193,26 @@ class WriteMultipleHoldingRegistersCommand : public RegisterCommand {
   };
 
  public:
-   static uint16_t ReadRegisterCount(const ArrayView<uint8_t> &data_array) {
+  static uint16_t ReadRegisterCount(const ArrayView<uint8_t> &data_array) {
     return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
         sizeof(uint16_t), &data_array[CommandPacket::kRegisterCount]});
   }
   static std::size_t ReadDataByteCount(const ArrayView<uint8_t> &data_array) {
     return data_array[CommandPacket::kNumberOfDataBytes];
   }
- static uint16_t ReadResponseRegisterCount(const ArrayView<uint8_t> &data_array) {
+  static uint16_t ReadResponseRegisterCount(
+      const ArrayView<uint8_t> &data_array) {
     return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
         sizeof(uint16_t), &data_array[ResponsePacket::kRegisterCount]});
   }
-  static uint16_t ReadResponseAddressStart(const ArrayView<uint8_t> &data_array) {
-      return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
-          sizeof(uint16_t), &data_array[ResponsePacket::kDataAddress]});
+  static uint16_t ReadResponseAddressStart(
+      const ArrayView<uint8_t> &data_array) {
+    return Utilities::Make_MSB_uint16_tFromU8Array(ArrayView<const uint8_t>{
+        sizeof(uint16_t), &data_array[ResponsePacket::kDataAddress]});
   }
 
   static void FillResponseHeader(const uint8_t slave_address,
-                              const uint16_t starting_address,
+                                 const uint16_t starting_address,
                                  const std::size_t register_count,
                                  Response *response) {
     response->operator[](DataCommand::ResponsePacket::kSlaveAddress) =
@@ -226,7 +233,7 @@ class WriteMultipleHoldingRegistersCommand : public RegisterCommand {
                            const uint16_t register_count,
                            const ArrayView<const uint16_t> &data,
                            Frame *frame) {
-	const uint8_t number_of_data_bytes = data.size() * sizeof(data[0]);
+    const uint8_t number_of_data_bytes = data.size() * sizeof(data[0]);
     const std::size_t frame_size =
         CommandPacket::kHeaderSize + number_of_data_bytes;
     assert(frame->data_array.size() >= frame_size);
@@ -254,7 +261,7 @@ class WriteMultipleHoldingRegistersCommand : public RegisterCommand {
 
 template <typename T>
 class HoldingRegisterController {
-  T* register_data_;
+  T *register_data_;
 
   Exception ValidateWriteSingleHoldingRegister(
       const ArrayView<uint8_t> &data_array) const {
@@ -277,11 +284,11 @@ class HoldingRegisterController {
     return Exception::kAck;
   }
   Exception ValidateWriteMultipleHoldingRegisters(
-    const ArrayView<uint8_t> &data_array) const {
+      const ArrayView<uint8_t> &data_array) const {
     const std::size_t register_count =
-          WriteMultipleHoldingRegistersCommand::ReadRegisterCount(data_array);
+        WriteMultipleHoldingRegistersCommand::ReadRegisterCount(data_array);
     const std::size_t num_data_bytes =
-          WriteMultipleHoldingRegistersCommand::ReadDataByteCount(data_array);
+        WriteMultipleHoldingRegistersCommand::ReadDataByteCount(data_array);
     const std::size_t address =
         WriteMultipleHoldingRegistersCommand::ReadAddressStart(data_array);
     if (!WriteLocationValid(address, register_count)) {
@@ -293,10 +300,9 @@ class HoldingRegisterController {
   }
 
  public:
-  explicit HoldingRegisterController(T* register_data) : register_data_{register_data} {}
-  T* GetDataStore(void) {
-    return register_data_;
-  }
+  explicit HoldingRegisterController(T *register_data)
+      : register_data_{register_data} {}
+  T *GetDataStore(void) { return register_data_; }
   bool WriteLocationValid(std::size_t address, std::size_t count) const {
     return register_data_->WriteLocationValid(address, count);
   }
@@ -310,15 +316,15 @@ class HoldingRegisterController {
     register_data_->SetRegister(address, value);
   }
   int32_t ReadFrame(const Frame &frame, Response *response) {
-      if (frame.function == Function::kWriteSingleHoldingRegister) {
-        return RunWriteSingleHoldingRegister(frame, response);
-      } else if (frame.function == Function::kReadMultipleHoldingRegisters) {
-        return RunReadMultipleHoldingRegisters(frame, response);
-      } else if (frame.function == Function::kWriteMultipleHoldingRegisters) {
-        return RunWriteMultipleHoldingRegisters(frame, response);
-      } else {
-        assert(0);
-      }
+    if (frame.function == Function::kWriteSingleHoldingRegister) {
+      return RunWriteSingleHoldingRegister(frame, response);
+    } else if (frame.function == Function::kReadMultipleHoldingRegisters) {
+      return RunReadMultipleHoldingRegisters(frame, response);
+    } else if (frame.function == Function::kWriteMultipleHoldingRegisters) {
+      return RunWriteMultipleHoldingRegisters(frame, response);
+    } else {
+      assert(0);
+    }
     return -1;
   }
   int32_t RunWriteSingleHoldingRegister(const Frame &frame,
@@ -327,42 +333,55 @@ class HoldingRegisterController {
     const uint16_t register_setting =
         WriteSingleHoldingRegisterCommand::ReadSetting(frame.data_array);
     WriteRegister(address, register_setting);
+    register_data_->set_register_callback(address, register_setting);
     WriteSingleHoldingRegisterCommand::FillResponseHeader(
         frame.address, address, register_setting, response);
     return 0;
   }
 
   int32_t RunReadMultipleHoldingRegisters(const Frame &frame,
-                                Response *response) {
-    const uint16_t address = ReadMultipleHoldingRegistersCommand::ReadAddressStart(frame.data_array);
-    const uint16_t register_count = ReadMultipleHoldingRegistersCommand::ReadRegisterCount(frame.data_array);
+                                          Response *response) {
+    const uint16_t address =
+        ReadMultipleHoldingRegistersCommand::ReadAddressStart(frame.data_array);
+    const uint16_t register_count =
+        ReadMultipleHoldingRegistersCommand::ReadRegisterCount(
+            frame.data_array);
     const uint8_t kDataBytes = sizeof(uint16_t) * register_count;
-    const std::size_t kPacketSize = kDataBytes + ReadMultipleHoldingRegistersCommand::ResponsePacket::kHeaderSize +
-      Command::kFooterLength;
+    const std::size_t kPacketSize =
+        kDataBytes +
+        ReadMultipleHoldingRegistersCommand::ResponsePacket::kHeaderSize +
+        Command::kFooterLength;
     response->SetLength(std::min(response->size(), kPacketSize));
 
-    ReadMultipleHoldingRegistersCommand::FillResponseHeader(frame.address, register_count, response);
+    ReadMultipleHoldingRegistersCommand::FillResponseHeader(
+        frame.address, register_count, response);
 
     auto response_data = ArrayView<uint8_t>{
-        response->GetLength() - ReadMultipleHoldingRegistersCommand::ResponsePacket::kHeaderSize,
-        &response->data()[ReadMultipleHoldingRegistersCommand::ResponsePacket::kHeaderSize]};
+        response->GetLength() -
+            ReadMultipleHoldingRegistersCommand::ResponsePacket::kHeaderSize,
+        &response->data()[ReadMultipleHoldingRegistersCommand::ResponsePacket::
+                              kHeaderSize]};
     ReadRegisters(address, register_count, &response_data);
     return 0;
   }
 
   int32_t RunWriteMultipleHoldingRegisters(const Frame &frame,
-                                        Response *response) {
+                                           Response *response) {
     const uint16_t address = DataCommand::ReadAddressStart(frame.data_array);
     const uint16_t register_count =
-      WriteMultipleHoldingRegistersCommand::ReadRegisterCount(frame.data_array);
-    //const uint16_t num_data_bytes =
-    //  WriteMultipleHoldingRegistersCommand::ReadDataByteCount(frame.data_array);
+        WriteMultipleHoldingRegistersCommand::ReadRegisterCount(
+            frame.data_array);
+    // const uint16_t num_data_bytes =
+    //   WriteMultipleHoldingRegistersCommand::ReadDataByteCount(frame.data_array);
     WriteMultipleHoldingRegistersCommand::FillResponseHeader(
         frame.address, address, register_count, response);
 
-    const ArrayView<const uint8_t> data_view{register_count*sizeof(uint16_t), 
-      &frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::kValueStart]};
+    const ArrayView<const uint8_t> data_view{
+        register_count * sizeof(uint16_t),
+        &frame.data_array[WriteMultipleHoldingRegistersCommand::CommandPacket::
+                              kValueStart]};
     register_data_->SetRegisters(address, register_count, data_view);
+    register_data_->set_registers_callback(address, register_count, data_view);
     return 0;
   }
 
@@ -373,18 +392,17 @@ class HoldingRegisterController {
       assert(0);
       return;
     }
-    register_data_->GetRegisters(starting_address, register_count, response_data);
+    register_data_->GetRegisters(starting_address, register_count,
+                                 response_data);
   }
 
   Exception ValidateFrame(const Frame &frame) const {
     Exception exception = Exception::kAck;
     if (frame.function == Function::kReadMultipleHoldingRegisters) {
       exception = ValidateReadMultipleHoldingRegisters(frame.data_array);
-    } else if (frame.function ==
-               Function::kWriteSingleHoldingRegister) {
+    } else if (frame.function == Function::kWriteSingleHoldingRegister) {
       exception = ValidateWriteSingleHoldingRegister(frame.data_array);
-    } else if (frame.function ==
-               Function::kWriteMultipleHoldingRegisters) {
+    } else if (frame.function == Function::kWriteMultipleHoldingRegisters) {
       exception = ValidateWriteMultipleHoldingRegisters(frame.data_array);
     } else {
       assert(0);
@@ -395,25 +413,23 @@ class HoldingRegisterController {
 
 template <typename T>
 class InputRegisterController {
-  T* register_data_;
+  T *register_data_;
 
-  Exception ValidateReadRegisters(
-      const ArrayView<uint8_t> &data_array) const {
+  Exception ValidateReadRegisters(const ArrayView<uint8_t> &data_array) const {
     const std::size_t address =
         ReadInputRegistersCommand::ReadAddressStart(data_array);
     const std::size_t register_count =
         ReadInputRegistersCommand::ReadRegisterCount(data_array);
     if (!ReadLocationValid(address, register_count)) {
-        return Exception::kIllegalDataAddress;
+      return Exception::kIllegalDataAddress;
     }
     return Exception::kAck;
   }
 
  public:
-  explicit InputRegisterController(T* register_data) : register_data_{register_data} {}
-  T* GetDataStore(void) {
-    return & register_data_;
-  }
+  explicit InputRegisterController(T *register_data)
+      : register_data_{register_data} {}
+  T *GetDataStore(void) { return &register_data_; }
   bool ReadLocationValid(std::size_t address, std::size_t count) const {
     return register_data_->ReadLocationValid(address, count);
   }
@@ -430,22 +446,22 @@ class InputRegisterController {
     return RunReadInputRegisters(frame, response);
   }
 
-
-  int32_t RunReadInputRegisters(const Frame &frame,
-                                Response *response) {
-
+  int32_t RunReadInputRegisters(const Frame &frame, Response *response) {
     const uint16_t register_count =
         ReadInputRegistersCommand::ReadRegisterCount(frame.data_array);
     const uint8_t kDataBytes = sizeof(uint16_t) * register_count;
-    const std::size_t kPacketSize = kDataBytes + ReadInputRegistersCommand::ResponsePacket::kHeaderSize +
-      Command::kFooterLength;
+    const std::size_t kPacketSize =
+        kDataBytes + ReadInputRegistersCommand::ResponsePacket::kHeaderSize +
+        Command::kFooterLength;
     response->SetLength(std::min(response->size(), kPacketSize));
     const uint16_t address =
         ReadInputRegistersCommand::ReadAddressStart(frame.data_array);
 
     auto response_data = ArrayView<uint8_t>{
-        response->GetLength() - ReadInputRegistersCommand::ResponsePacket::kHeaderSize,
-        &response->data()[ReadInputRegistersCommand::ResponsePacket::kHeaderSize]};
+        response->GetLength() -
+            ReadInputRegistersCommand::ResponsePacket::kHeaderSize,
+        &response
+             ->data()[ReadInputRegistersCommand::ResponsePacket::kHeaderSize]};
     ReadRegisters(address, register_count, &response_data);
     ReadInputRegistersCommand::FillResponseHeader(frame.address, register_count,
                                                   response);
@@ -459,7 +475,8 @@ class InputRegisterController {
       assert(0);
       return;
     }
-    register_data_->GetRegisters(starting_address, register_count, response_data);
+    register_data_->GetRegisters(starting_address, register_count,
+                                 response_data);
   }
 
   Exception ValidateFrame(const Frame &frame) const {

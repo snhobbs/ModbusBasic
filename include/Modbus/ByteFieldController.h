@@ -1,11 +1,13 @@
 #pragma once
-#include "ByteField.h"
 #include <utility>  //  for std::pair
 
-inline bool fields_are_sorted(const U8Field * const * const fields, const size_t length) {
+#include "ByteField.h"
+
+inline bool fields_are_sorted(const U8Field* const* const fields,
+                              const size_t length) {
   bool sorted = true;
   size_t next_start = 0;
-  for (size_t i=0; i<length; i++) {
+  for (size_t i = 0; i < length; i++) {
     if (fields[i]->address < next_start) {
       sorted = false;
       break;
@@ -16,11 +18,12 @@ inline bool fields_are_sorted(const U8Field * const * const fields, const size_t
 }
 
 /*
- * Accessor for a field of values with addresses, data blocks, and sizes 
+ * Accessor for a field of values with addresses, data blocks, and sizes
  * Blocks can be scattered and do not have to be continuous
  * */
 class ByteFieldController {
-  std::pair<U8Field**, size_t> entries_;  //  List of blocks with address, size, and data buffer
+  std::pair<U8Field**, size_t>
+      entries_;  //  List of blocks with address, size, and data buffer
 
  public:
   /*
@@ -30,8 +33,9 @@ class ByteFieldController {
    * */
   size_t find_block(const size_t address, const size_t) const {
     size_t block = entries_.second;  //  impossible value
-    for (size_t i=0; i<entries_.second; i++) {
-      const size_t block_end = entries_.first[i]->address + entries_.first[i]->length - 1;
+    for (size_t i = 0; i < entries_.second; i++) {
+      const size_t block_end =
+          entries_.first[i]->address + entries_.first[i]->length - 1;
       if (address <= block_end) {
         block = i;
         break;
@@ -47,14 +51,15 @@ class ByteFieldController {
     const size_t block_end = p_block->address + p_block->length - 1;
     const size_t read_end = address + length - 1;
     if (address <= block_end) {  //  start is less than the end of the block
-      if ( ( address >= p_block->address ) && ( read_end <= block_end ) ) {
+      if ((address >= p_block->address) && (read_end <= block_end)) {
         valid = true;
       }
     }
     return valid;
   }
 
-  ByteFieldController(U8Field** entries, const size_t entry_length) : entries_{entries, entry_length} {
+  ByteFieldController(U8Field** entries, const size_t entry_length)
+      : entries_{entries, entry_length} {
     assert(fields_are_sorted(entries, entry_length));
   }
 };

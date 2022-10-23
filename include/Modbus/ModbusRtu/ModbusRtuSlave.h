@@ -20,9 +20,9 @@
 #define MODBUS_MODBUSRTUSLAVE_H_
 #include <Modbus/Modbus.h>
 #include <Modbus/ModbusRtu/ModbusRtuProtocol.h>
+#include <Modbus/Utilities.h>
 #include <Utilities/TypeConversion.h>
 
-#include <Modbus/Utilities.h>
 #include <cstdint>
 namespace Modbus {
 
@@ -47,8 +47,7 @@ class SlaveProtocolBase : public ProtocolRtu {
     response_ = response;
   }
 
-  void SendErrorResponse(const Modbus::Frame &frame,
-                         Exception exception) {
+  void SendErrorResponse(const Modbus::Frame& frame, Exception exception) {
     Modbus::Frame error_frame;
     error_frame.address = frame.address;
     error_frame.function = GetErrorFunction(frame.function);
@@ -60,7 +59,7 @@ class SlaveProtocolBase : public ProtocolRtu {
     SetResponseValid(true);
   }
 
-  const Modbus::Frame &GetFrameIn(void) { return framein_; }
+  const Modbus::Frame& GetFrameIn(void) { return framein_; }
 
   void ResetRead(void) {
     ctx_.Reset();
@@ -69,7 +68,7 @@ class SlaveProtocolBase : public ProtocolRtu {
     framein_.Reset();
   }
 
-  const Response &GetResponse(void) { return response_; }
+  const Response& GetResponse(void) { return response_; }
 
   void ResetResponse(void) {
     SetResponseValid(false);
@@ -88,8 +87,7 @@ class ProtocolRtuSlave {
   static const constexpr Function implimented_functions_[]{
       //  Function::kReadCoils,
       //  Function::kReadDiscreteInputs,
-      Function::kReadMultipleHoldingRegisters,
-      Function::kReadInputRegisters,
+      Function::kReadMultipleHoldingRegisters, Function::kReadInputRegisters,
       //  Function::kWriteSingleCoil,
       Function::kWriteSingleHoldingRegister,
       Function::kWriteMultipleHoldingRegisters,
@@ -113,31 +111,32 @@ class ProtocolRtuSlave {
    * all commands have the response of slave address, function, {payload
    * specific response}, crc lsb, crc msb
    * */
-  int32_t RunCommand(const Modbus::Frame &frame) {
+  int32_t RunCommand(const Modbus::Frame& frame) {
     int32_t response_code = 0;
     Response response{};
     switch (GetAddressSpaceFromFunction(frame.function)) {
-    case (AddressSpace::kCoil):
-      response_code = -1;
-      break;
-    case (AddressSpace::kDiscreteInput):
-      response_code = -1;
-      break;
-    case (AddressSpace::kInputRegister):
-      response_code = input_register_controller_.ReadFrame(frame, &response);
-      break;
-    case (AddressSpace::kHoldingRegister):
-      response_code = holding_register_controller_.ReadFrame(frame, &response);
-      break;
-    case (AddressSpace::kDeviceIdentifier):
-      response_code = -1;
-      break;
-    case (AddressSpace::kUnmapped):
-      response_code = -1;
-      break;
-    default:
-      response_code = -1;
-      break;
+      case (AddressSpace::kCoil):
+        response_code = -1;
+        break;
+      case (AddressSpace::kDiscreteInput):
+        response_code = -1;
+        break;
+      case (AddressSpace::kInputRegister):
+        response_code = input_register_controller_.ReadFrame(frame, &response);
+        break;
+      case (AddressSpace::kHoldingRegister):
+        response_code =
+            holding_register_controller_.ReadFrame(frame, &response);
+        break;
+      case (AddressSpace::kDeviceIdentifier):
+        response_code = -1;
+        break;
+      case (AddressSpace::kUnmapped):
+        response_code = -1;
+        break;
+      default:
+        response_code = -1;
+        break;
     }
     if (response_code == 0) {
       slave_.FrameResponse(frame, &response);
@@ -147,8 +146,8 @@ class ProtocolRtuSlave {
     return response_code;
   }
 
-  const Modbus::Frame &GetFrameIn(void) { return slave_.GetFrameIn(); }
-  const Response &GetResponse(void) { return slave_.GetResponse(); }
+  const Modbus::Frame& GetFrameIn(void) { return slave_.GetFrameIn(); }
+  const Response& GetResponse(void) { return slave_.GetResponse(); }
   bool GetResponseValid(void) { return slave_.GetResponseValid(); }
 
   void Reset(void) {
@@ -159,27 +158,29 @@ class ProtocolRtuSlave {
   /*
    * Check the command for basic errors in function, data address, or data valid
    * */
-  Exception ValidateMessage(const Modbus::Frame &frame) const {
-    if (!InList(frame.function, implimented_functions_, sizeof(implimented_functions_)/sizeof(implimented_functions_[0]))) {
+  Exception ValidateMessage(const Modbus::Frame& frame) const {
+    if (!InList(frame.function, implimented_functions_,
+                sizeof(implimented_functions_) /
+                    sizeof(implimented_functions_[0]))) {
       return Exception::kIllegalFunction;
     }
     switch (GetAddressSpaceFromFunction(frame.function)) {
-    case (AddressSpace::kCoil):
-      return Exception::kIllegalFunction;
-    case (AddressSpace::kDiscreteInput):
-      return Exception::kIllegalFunction;
-    case (AddressSpace::kInputRegister):
-      return input_register_controller_.ValidateFrame(frame);
-    case (AddressSpace::kHoldingRegister):
-      return holding_register_controller_.ValidateFrame(frame);
-    case (AddressSpace::kDeviceIdentifier):
-      return Exception::kIllegalFunction;
-    case (AddressSpace::kSystemStatus):
-      return Exception::kIllegalFunction;
-    case (AddressSpace::kUnmapped):
-      return Exception::kIllegalFunction;
-    default:
-      break;
+      case (AddressSpace::kCoil):
+        return Exception::kIllegalFunction;
+      case (AddressSpace::kDiscreteInput):
+        return Exception::kIllegalFunction;
+      case (AddressSpace::kInputRegister):
+        return input_register_controller_.ValidateFrame(frame);
+      case (AddressSpace::kHoldingRegister):
+        return holding_register_controller_.ValidateFrame(frame);
+      case (AddressSpace::kDeviceIdentifier):
+        return Exception::kIllegalFunction;
+      case (AddressSpace::kSystemStatus):
+        return Exception::kIllegalFunction;
+      case (AddressSpace::kUnmapped):
+        return Exception::kIllegalFunction;
+      default:
+        break;
     }
     return Exception::kIllegalFunction;
   }
@@ -189,13 +190,9 @@ class ProtocolRtuSlave {
     slave_address_ = slave_address;
   }
 
-  void ProcessMessageNoAddress(void) {
-    ProcessMessage(false);
-  }
+  void ProcessMessageNoAddress(void) { ProcessMessage(false); }
 
-  const ReadContext& GetContext(void) const {
-    return slave_.ctx_;
-  }
+  const ReadContext& GetContext(void) const { return slave_.ctx_; }
 
   void ProcessMessage(const bool filter_address = true) {
     const auto& frame = GetFrameIn();
@@ -206,17 +203,19 @@ class ProtocolRtuSlave {
           RunCommand(frame);
         } else {
           slave_.SendErrorResponse(frame, exception);
-        }  
+        }
       }
     }
   }
 
-  explicit ProtocolRtuSlave(Crc16 crc16, uint8_t slave_address,
-              THoldingRegisterController& holding_register_controller,
-              TInputRegisterController& input_register_controller)
-      : slave_{crc16}, slave_address_{slave_address},
-    holding_register_controller_{holding_register_controller},
-    input_register_controller_{input_register_controller}{}
+  explicit ProtocolRtuSlave(
+      Crc16 crc16, uint8_t slave_address,
+      THoldingRegisterController& holding_register_controller,
+      TInputRegisterController& input_register_controller)
+      : slave_{crc16},
+        slave_address_{slave_address},
+        holding_register_controller_{holding_register_controller},
+        input_register_controller_{input_register_controller} {}
 };
 }  //  namespace Modbus
 

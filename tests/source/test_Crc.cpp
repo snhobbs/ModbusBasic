@@ -3,10 +3,11 @@
  * */
 #include <Utilities/Crc.h>
 #include <gtest/gtest.h>
+
 #include <array>
+#include <cassert>
 #include <iostream>
 #include <vector>
-#include <cassert>
 
 /*
  * Example from MS56XX AN520

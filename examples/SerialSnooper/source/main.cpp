@@ -1,9 +1,10 @@
-#include "LinuxSlave.h"
-#include <cstring>
 #include <cassert>
 #include <cstdio>
-int main(int argc, char* argv[]){
-  if(argc < 2) {
+#include <cstring>
+
+#include "LinuxSlave.h"
+int main(int argc, char* argv[]) {
+  if (argc < 2) {
     printf("Requires device port as argument, exiting\n");
     return 1;
   }
@@ -14,10 +15,10 @@ int main(int argc, char* argv[]){
 
   LinuxSlave slave{argv[1]};
   std::size_t loops = 0;
-  while(true) {
+  while (true) {
     loops++;
     slave.Run();
-    if (loops%(1<<20) == 0) {
+    if (loops % (1 << 20) == 0) {
       printf("[");
       const auto dstore = slave.holding_register_data_store;
       for (std::size_t i = 0; i < dstore.size(); i++) {

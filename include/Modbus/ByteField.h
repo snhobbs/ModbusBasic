@@ -1,11 +1,12 @@
 #pragma once
+#include <Utilities/Serializer.h>
+
+#include <algorithm>
+#include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
-#include <cassert>
 #include <cstring>
-#include <climits>
-#include <algorithm>
-#include <Utilities/Serializer.h>
 
 #define BYTE_SIZE 8
 #define REGISTER_SIZE 2
@@ -20,4 +21,3 @@ struct U8Field {
   size_t length;
   u8_Buffer* buffer;
 };
-

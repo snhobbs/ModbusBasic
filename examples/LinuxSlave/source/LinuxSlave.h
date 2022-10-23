@@ -10,31 +10,34 @@
  */
 
 #pragma once
-#include "LinuxModbusTools.h"
 #include <Modbus/../../examples/posix/PosixSerial.h>
-#include <Modbus/Modbus.h>
 #include <Modbus/BitControl.h>
 #include <Modbus/DataStore.h>
+#include <Modbus/Modbus.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <Modbus/RegisterControl.h>
 #include <Utilities/TypeConversion.h>
+#include <sys/time.h>
+
 #include <cassert>
 #include <cstdint>
-#include <sys/time.h>
 #include <vector>
+
+#include "LinuxModbusTools.h"
 
 inline const constexpr std::size_t kCoilCount = 125;
 inline const constexpr std::size_t kRegisterCount = 1024;
 using CoilController =
     Modbus::CoilController<Modbus::BitFieldDataStore<kCoilCount>>;
-using HoldingRegisterController =
-  Modbus::HoldingRegisterController<Modbus::RegisterDataStore<kRegisterCount>>;
+using HoldingRegisterController = Modbus::HoldingRegisterController<
+    Modbus::RegisterDataStore<kRegisterCount>>;
 using DiscreteInputController =
     Modbus::DiscreteInputController<Modbus::BitFieldDataStore<kCoilCount>>;
 using InputRegisterController =
     Modbus::InputRegisterController<Modbus::RegisterDataStore<kRegisterCount>>;
 using SlaveBase =
-      Modbus::ProtocolRtuSlave<CoilController, HoldingRegisterController, DiscreteInputController, InputRegisterController>;
+    Modbus::ProtocolRtuSlave<CoilController, HoldingRegisterController,
+                             DiscreteInputController, InputRegisterController>;
 
 class LinuxSlave : public SlaveBase {
  public:
@@ -55,7 +58,7 @@ class LinuxSlave : public SlaveBase {
   static const constexpr speed_t kBaudRate = B9600;
   static const constexpr int kCharacterClocks = 8 + 1;
 
-  const char *const device_name; // = "/tmp/ttyp0";
+  const char *const device_name;  // = "/tmp/ttyp0";
   timeval last_character_time_ = GetTimeStamp();
   static const constexpr int64_t kFrameDelay_us =
       (1e6 * (kCharacterClocks * 3.5)) / (static_cast<double>(kBaudRateHz));
@@ -71,9 +74,9 @@ class LinuxSlave : public SlaveBase {
   void ProcessPacket(void) {
     ProcessMessage();
 
-    const auto& frame = GetFrameIn();
+    const auto &frame = GetFrameIn();
     Modbus::PrintPacketData(frame);
-      printf("\n");
+    printf("\n");
 #if 0
     if (frame.address == 246 || frame.function == Modbus::Function::kWriteMultipleHoldingRegisters) {
       printf("\n");
@@ -100,14 +103,15 @@ class LinuxSlave : public SlaveBase {
   }
 
   bool RxCharacterTimeout(const timeval &timestamp) const {
-    const bool character_timeout = GetMicroSecondsSince(last_character_time_, timestamp) >=
-           10 * kFrameDelay_us;
+    const bool character_timeout =
+        GetMicroSecondsSince(last_character_time_, timestamp) >=
+        10 * kFrameDelay_us;
     return character_timeout;
   }
 
  public:
   void Run(void) {
-    //sleep(0.005);
+    // sleep(0.005);
     iodev_.SendTxBuff();
     iodev_.ReadIntoRxBuff();
 
@@ -126,7 +130,7 @@ class LinuxSlave : public SlaveBase {
   }
 
   explicit LinuxSlave(const char *const port)
-      : SlaveBase{&crc16, kSlaveAddress, coils_,
-                  hregs_, dins_, inregs_},
-        device_name{port}, iodev_{port, kBaudRate} {}
+      : SlaveBase{&crc16, kSlaveAddress, coils_, hregs_, dins_, inregs_},
+        device_name{port},
+        iodev_{port, kBaudRate} {}
 };

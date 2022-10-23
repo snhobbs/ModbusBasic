@@ -5,26 +5,28 @@
  *  Created on: Jun 27, 2018
  *      Author: simon
  */
-#include "RingBuffer/RingBuffer.h"
-#include <gtest/gtest.h> 
+#include <gtest/gtest.h>
+
 #include <algorithm>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdint>
 
-class RingBuffSetup: public ::testing::Test {
+#include "RingBuffer/RingBuffer.h"
+
+class RingBuffSetup : public ::testing::Test {
  public:
   static const std::size_t kBuffSize = 4096;
   RingBuffSetup(void) {}
   ~RingBuffSetup(void) {}
   void SetUp(void) {
-      // code here will execute just before the test ensues 
+    // code here will execute just before the test ensues
   }
 
   void TearDown(void) {
-      // code here will be called just after the test completes
-      // ok to through exceptions from here if need be
+    // code here will be called just after the test completes
+    // ok to through exceptions from here if need be
   }
 };
 
@@ -55,8 +57,8 @@ TEST_F(RingBuffSetup, Peek) {
   }
 }
 
-template<typename T>
-uint32_t MaskIndex(const T& buffer, uint32_t index) {
+template <typename T>
+uint32_t MaskIndex(const T &buffer, uint32_t index) {
   return (buffer.size() - 1) & index;
 }
 
@@ -78,7 +80,7 @@ TEST_F(RingBuffSetup, PeekLong) {
   EXPECT_EQ(false, buff.isEmpty());
   EXPECT_TRUE(buff.GetCount() == buff.GetSize());
 
-  for (std::size_t i = 0; i < buff.size(); i ++) {
+  for (std::size_t i = 0; i < buff.size(); i++) {
     uint32_t dp = 0;
     buff.peek(&dp, buff.size() - i);
     EXPECT_EQ(dp, long_data[i]);
@@ -102,13 +104,13 @@ TEST_F(RingBuffSetup, InsertMulti) {
   EXPECT_EQ(false, buff.isEmpty());
   EXPECT_TRUE(buff.GetCount() == buff.GetSize());
 
-  for (std::size_t i = 0; i < buff.size(); i ++) {
+  for (std::size_t i = 0; i < buff.size(); i++) {
     char dp = '\0';
     buff.peek(&dp, buff.size() - i);
     EXPECT_EQ(dp, long_data[i]);
   }
 
-  buff.insert(const_cast<char *>(long_data.data()), kBuffSize); // Overruns!
+  buff.insert(const_cast<char *>(long_data.data()), kBuffSize);  // Overruns!
 }
 
 TEST_F(RingBuffSetup, InsertOverRun) {
@@ -118,7 +120,7 @@ TEST_F(RingBuffSetup, InsertOverRun) {
   std::vector<char> outTxt;
   outTxt.reserve(kBuffSize);
 
-  while (longTxt.size() <= kBuffSize) { // longtext is longer than buffer
+  while (longTxt.size() <= kBuffSize) {  // longtext is longer than buffer
     longTxt.append(txt);
   }
 

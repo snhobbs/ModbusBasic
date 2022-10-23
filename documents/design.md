@@ -69,31 +69,31 @@ The protocol controller and controllers are fully put in a library.
 
 
 
-# Protocol Controller                                                             
-+ reads, writes passed through accessor                                           
-+ wether or not a access is valid is handled by accessor                          
+# Protocol Controller
++ reads, writes passed through accessor
++ wether or not a access is valid is handled by accessor
 + Bytes come in, they should be passed consistantly to the reader, updating the state
-  + Packet full, all data read                                                    
-  + Check crc, reject send error response or continue                             
-  + Find action and field type from packet header, if action is unsupported send error else continue                                                                   
-      +  FieldType GetAddressSpaceFromFunction(Command)                                                                                                                
-  + validate access through accessor, send error or continue                                                                                                           
-  + Apply action through accessor                                                                                                                                      
-  + Calculate crc                                                                                                                                                      
-  + send packet                                                                                                                                                        
-+ Data is sent directly to uart, uart buffer should be large enough to handle the largest access 
-                                                                                  
-+ ReadStateMachine                                                                
-  + Knows the type of packets, applies logic to know state                                                                                                             
-    + Read known header length till packet type                                                                                                                        
-    + Request meta data length                                                    
-    + read till meta data finished                                                
-        + Interfaces? Polymorphic handling                              
-    + request data length                                                         
+  + Packet full, all data read
+  + Check crc, reject send error response or continue
+  + Find action and field type from packet header, if action is unsupported send error else continue
+      +  FieldType GetAddressSpaceFromFunction(Command)
+  + validate access through accessor, send error or continue
+  + Apply action through accessor
+  + Calculate crc
+  + send packet
++ Data is sent directly to uart, uart buffer should be large enough to handle the largest access
+
++ ReadStateMachine
+  + Knows the type of packets, applies logic to know state
+    + Read known header length till packet type
+    + Request meta data length
+    + read till meta data finished
+        + Interfaces? Polymorphic handling
+    + request data length
         + Interface, needs to call something to process the packet.
-    + read till data finished                                                     
-    + dispatch                                                                    
-+ Crc Calculator                                                                  
-+ PacketReader                                                                    
+    + read till data finished
+    + dispatch
++ Crc Calculator
++ PacketReader
   + Structure knowlege shared with ReadStateMachine, shared knowledge should be factored out
-+ Interface to IO  
++ Interface to IO

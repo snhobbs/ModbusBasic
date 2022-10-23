@@ -12,10 +12,11 @@
 #ifndef MODBUS_MODBUS_H_
 #define MODBUS_MODBUS_H_
 
+#include <ArrayView/ArrayView.h>
+
 #include <array>
 #include <cassert>
 #include <cstdint>
-#include <ArrayView/ArrayView.h>
 /*
  * Central modbus definitions
  *  -> data types
@@ -40,7 +41,8 @@
 
 namespace Modbus {
 
-const constexpr uint8_t kStatusResponseAddValue = 0x80;  //  Add to function response when sending status code
+const constexpr uint8_t kStatusResponseAddValue =
+    0x80;  //  Add to function response when sending status code
 enum class Exception : uint8_t {
   kNoException = 0,
   kIllegalFunction = 1,
@@ -88,24 +90,46 @@ enum class Function : uint8_t {
   kReadDeviceIdentification = 43,
 
   kErrorReadCoils = static_cast<uint8_t>(kReadCoils) + kStatusResponseAddValue,
-  kErrorReadDiscreteInputs = static_cast<uint8_t>(kReadDiscreteInputs) + kStatusResponseAddValue,
-  kErrorReadMultipleHoldingRegisters = static_cast<uint8_t>(kReadMultipleHoldingRegisters) + kStatusResponseAddValue,
-  kErrorReadInputRegisters = static_cast<uint8_t>(kReadInputRegisters) + kStatusResponseAddValue,
-  kErrorWriteSingleCoil = static_cast<uint8_t>(kWriteSingleCoil) + kStatusResponseAddValue,
-  kErrorWriteSingleHoldingRegister = static_cast<uint8_t>(kWriteSingleHoldingRegister) + kStatusResponseAddValue,
-  kErrorReadExceptionStatus = static_cast<uint8_t>(kReadExceptionStatus) + kStatusResponseAddValue,
-  kErrorDiagnostic = static_cast<uint8_t>(kDiagnostic) + kStatusResponseAddValue,
-  kErrorGetComEventCounter = static_cast<uint8_t>(kGetComEventCounter) + kStatusResponseAddValue,
-  kErrorGetComEventLog = static_cast<uint8_t>(kGetComEventLog) + kStatusResponseAddValue,
-  kErrorWriteMultipleCoils = static_cast<uint8_t>(kWriteMultipleCoils) + kStatusResponseAddValue,
-  kErrorWriteMultipleHoldingRegisters = static_cast<uint8_t>(kWriteMultipleHoldingRegisters) + kStatusResponseAddValue,
-  kErrorReportSlaveId = static_cast<uint8_t>(kReportSlaveId) + kStatusResponseAddValue,
-  kErrorReadFileRecord = static_cast<uint8_t>(kReadFileRecord) + kStatusResponseAddValue,
-  kErrorWriteFileRecord = static_cast<uint8_t>(kWriteFileRecord) + kStatusResponseAddValue,
-  kErrorMaskWriteRegister = static_cast<uint8_t>(kMaskWriteRegister) + kStatusResponseAddValue,
-  kErrorReadWriteMultipleRegisters = static_cast<uint8_t>(kReadWriteMultipleRegisters) + kStatusResponseAddValue,
-  kErrorReadFifoQueue = static_cast<uint8_t>(kReadFifoQueue) + kStatusResponseAddValue,
-  kErrorReadDeviceIdentification = static_cast<uint8_t>(kReadDeviceIdentification) + kStatusResponseAddValue,
+  kErrorReadDiscreteInputs =
+      static_cast<uint8_t>(kReadDiscreteInputs) + kStatusResponseAddValue,
+  kErrorReadMultipleHoldingRegisters =
+      static_cast<uint8_t>(kReadMultipleHoldingRegisters) +
+      kStatusResponseAddValue,
+  kErrorReadInputRegisters =
+      static_cast<uint8_t>(kReadInputRegisters) + kStatusResponseAddValue,
+  kErrorWriteSingleCoil =
+      static_cast<uint8_t>(kWriteSingleCoil) + kStatusResponseAddValue,
+  kErrorWriteSingleHoldingRegister =
+      static_cast<uint8_t>(kWriteSingleHoldingRegister) +
+      kStatusResponseAddValue,
+  kErrorReadExceptionStatus =
+      static_cast<uint8_t>(kReadExceptionStatus) + kStatusResponseAddValue,
+  kErrorDiagnostic =
+      static_cast<uint8_t>(kDiagnostic) + kStatusResponseAddValue,
+  kErrorGetComEventCounter =
+      static_cast<uint8_t>(kGetComEventCounter) + kStatusResponseAddValue,
+  kErrorGetComEventLog =
+      static_cast<uint8_t>(kGetComEventLog) + kStatusResponseAddValue,
+  kErrorWriteMultipleCoils =
+      static_cast<uint8_t>(kWriteMultipleCoils) + kStatusResponseAddValue,
+  kErrorWriteMultipleHoldingRegisters =
+      static_cast<uint8_t>(kWriteMultipleHoldingRegisters) +
+      kStatusResponseAddValue,
+  kErrorReportSlaveId =
+      static_cast<uint8_t>(kReportSlaveId) + kStatusResponseAddValue,
+  kErrorReadFileRecord =
+      static_cast<uint8_t>(kReadFileRecord) + kStatusResponseAddValue,
+  kErrorWriteFileRecord =
+      static_cast<uint8_t>(kWriteFileRecord) + kStatusResponseAddValue,
+  kErrorMaskWriteRegister =
+      static_cast<uint8_t>(kMaskWriteRegister) + kStatusResponseAddValue,
+  kErrorReadWriteMultipleRegisters =
+      static_cast<uint8_t>(kReadWriteMultipleRegisters) +
+      kStatusResponseAddValue,
+  kErrorReadFifoQueue =
+      static_cast<uint8_t>(kReadFifoQueue) + kStatusResponseAddValue,
+  kErrorReadDeviceIdentification =
+      static_cast<uint8_t>(kReadDeviceIdentification) + kStatusResponseAddValue,
 
   kNone = 0xff
 };
@@ -114,17 +138,12 @@ inline constexpr Modbus::Function GetErrorFunction(Modbus::Function function) {
   if (static_cast<uint8_t>(function) >= kStatusResponseAddValue) {
     return function;
   } else {
-    return static_cast<Modbus::Function>(static_cast<uint8_t>(function) + kStatusResponseAddValue);
+    return static_cast<Modbus::Function>(static_cast<uint8_t>(function) +
+                                         kStatusResponseAddValue);
   }
 }
 
-enum class PacketState {
-  kAddress,
-  kFunction,
-  kMeta,
-  kData,
-  kDone
-};
+enum class PacketState { kAddress, kFunction, kMeta, kData, kDone };
 
 enum class CoilState : uint16_t {
   kOff = 0x0000,
@@ -133,51 +152,53 @@ enum class CoilState : uint16_t {
 };
 
 // const constexpr extern Modbus::Function valid_functions[18];
-inline const constexpr std::array<const Modbus::Function, 19> GetValidFunctions() {
+inline const constexpr std::array<const Modbus::Function, 19>
+GetValidFunctions() {
   return {
-    Modbus::Function::kReadCoils,
-    Modbus::Function::kReadDiscreteInputs,
-    Modbus::Function::kReadMultipleHoldingRegisters,
-    Modbus::Function::kReadInputRegisters,
-    Modbus::Function::kWriteSingleCoil,
-    Modbus::Function::kWriteSingleHoldingRegister,
-    Modbus::Function::kReadExceptionStatus,
-    Modbus::Function::kDiagnostic,
-    Modbus::Function::kGetComEventCounter,
-    Modbus::Function::kGetComEventLog,
-    Modbus::Function::kWriteMultipleCoils,
-    Modbus::Function::kWriteMultipleHoldingRegisters,
-    Modbus::Function::kReportSlaveId,
-    Modbus::Function::kReadFileRecord,
-    Modbus::Function::kWriteFileRecord,
-    Modbus::Function::kMaskWriteRegister,
-    Modbus::Function::kReadWriteMultipleRegisters,
-    Modbus::Function::kReadFifoQueue,
-    Modbus::Function::kReadDeviceIdentification,
+      Modbus::Function::kReadCoils,
+      Modbus::Function::kReadDiscreteInputs,
+      Modbus::Function::kReadMultipleHoldingRegisters,
+      Modbus::Function::kReadInputRegisters,
+      Modbus::Function::kWriteSingleCoil,
+      Modbus::Function::kWriteSingleHoldingRegister,
+      Modbus::Function::kReadExceptionStatus,
+      Modbus::Function::kDiagnostic,
+      Modbus::Function::kGetComEventCounter,
+      Modbus::Function::kGetComEventLog,
+      Modbus::Function::kWriteMultipleCoils,
+      Modbus::Function::kWriteMultipleHoldingRegisters,
+      Modbus::Function::kReportSlaveId,
+      Modbus::Function::kReadFileRecord,
+      Modbus::Function::kWriteFileRecord,
+      Modbus::Function::kMaskWriteRegister,
+      Modbus::Function::kReadWriteMultipleRegisters,
+      Modbus::Function::kReadFifoQueue,
+      Modbus::Function::kReadDeviceIdentification,
   };
 }
 
-inline const constexpr std::array<const Modbus::Function, 4> GetSupportedFunctions() {
+inline const constexpr std::array<const Modbus::Function, 4>
+GetSupportedFunctions() {
   return {
-    // Modbus::Function::kReadCoils,
-    // Modbus::Function::kReadDiscreteInputs,
-    Modbus::Function::kReadMultipleHoldingRegisters,
-    Modbus::Function::kReadInputRegisters,
-    // Modbus::Function::kWriteSingleCoil,
-    Modbus::Function::kWriteSingleHoldingRegister,
-    // Modbus::Function::kReadExceptionStatus,
-    // Modbus::Function::kDiagnostic,
-    // Modbus::Function::kGetComEventCounter,
-    // Modbus::Function::kGetComEventLog,
-    // Modbus::Function::kWriteMultipleCoils,
-    Modbus::Function::kWriteMultipleHoldingRegisters,
-    // Modbus::Function::kReportSlaveId,
-    // Modbus::Function::kReadFileRecord,
-    // Modbus::Function::kWriteFileRecord,
-    // Modbus::Function::kMaskWriteRegister,
-    // Modbus::Function::kReadWriteMultipleRegisters,
-    // Modbus::Function::kReadFifoQueue,
-    // Modbus::Function::kReadDeviceIdentification,
+      // Modbus::Function::kReadCoils,
+      // Modbus::Function::kReadDiscreteInputs,
+      Modbus::Function::kReadMultipleHoldingRegisters,
+      Modbus::Function::kReadInputRegisters,
+      // Modbus::Function::kWriteSingleCoil,
+      Modbus::Function::kWriteSingleHoldingRegister,
+      // Modbus::Function::kReadExceptionStatus,
+      // Modbus::Function::kDiagnostic,
+      // Modbus::Function::kGetComEventCounter,
+      // Modbus::Function::kGetComEventLog,
+      // Modbus::Function::kWriteMultipleCoils,
+      Modbus::Function::kWriteMultipleHoldingRegisters,
+      // Modbus::Function::kReportSlaveId,
+      // Modbus::Function::kReadFileRecord,
+      // Modbus::Function::kWriteFileRecord,
+      // Modbus::Function::kMaskWriteRegister,
+      // Modbus::Function::kReadWriteMultipleRegisters,
+      // Modbus::Function::kReadFifoQueue,
+      // Modbus::Function::kReadDeviceIdentification,
   };
 }
 
@@ -262,12 +283,7 @@ inline constexpr bool FunctionCodeIsValid(uint8_t code) {
   return false;
 }
 
-enum class PacketType {
-  kCommand,
-  kResponse,
-  kError,
-  kUnknown
-};
+enum class PacketType { kCommand, kResponse, kError, kUnknown };
 
 #if 0
 class Packet {
@@ -298,15 +314,19 @@ struct Frame {
     address = 0;
     function = Modbus::Function::kNone;
     data_length = 0;
-    for (auto& pt : data_array) {
+    for (auto &pt : data_array) {
       pt = 0;
     }
   }
-  Frame(uint8_t addr, Modbus::Function func, std::size_t length, ArrayView<uint8_t> arrayview) : 
-    address{addr}, function{func}, data_length{length}, data_array{arrayview.size(), arrayview.data()} {}
+  Frame(uint8_t addr, Modbus::Function func, std::size_t length,
+        ArrayView<uint8_t> arrayview)
+      : address{addr},
+        function{func},
+        data_length{length},
+        data_array{arrayview.size(), arrayview.data()} {}
 
-  explicit Frame(ArrayView<uint8_t> arrayview) :
-    data_array{arrayview.size(), arrayview.data()} {}
+  explicit Frame(ArrayView<uint8_t> arrayview)
+      : data_array{arrayview.size(), arrayview.data()} {}
 
   Frame(void) {}
 };
@@ -365,7 +385,8 @@ struct Command {
     static const constexpr std::size_t kHeaderEnd = kFunction;
   };
   struct ResponsePacket {
-    static const constexpr std::size_t kSlaveAddress = CommandPacket::kSlaveAddress;
+    static const constexpr std::size_t kSlaveAddress =
+        CommandPacket::kSlaveAddress;
     static const constexpr std::size_t kFunction = CommandPacket::kFunction;
     static const constexpr std::size_t kHeaderEnd = CommandPacket::kHeaderEnd;
   };

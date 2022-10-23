@@ -13,18 +13,18 @@
 #include <IODevice/IODevice.h>
 #include <RingBuffer/RingBuffer.h>
 #include <Utilities/TypeConversion.h>
-#include <cassert>
-#include <cerrno> // Error number definitions
-#include <cstdint>
-#include <cstdio> // standard input / output functions
-#include <cstdlib>
-#include <cstring> // string function definitions
-#include <fcntl.h> // File control definitions
-#include <iostream>
+#include <fcntl.h>  // File control definitions
 #include <sys/time.h>
-#include <termios.h> // POSIX terminal control definitions
-#include <unistd.h>  // UNIX standard function definitions
+#include <termios.h>  // POSIX terminal control definitions
+#include <unistd.h>   // UNIX standard function definitions
 
+#include <cassert>
+#include <cerrno>  // Error number definitions
+#include <cstdint>
+#include <cstdio>  // standard input / output functions
+#include <cstdlib>
+#include <cstring>  // string function definitions
+#include <iostream>
 
 int SetupSerial(const char *device, const speed_t baudrate = B9600) {
   const int flags = O_RDWR | O_NOCTTY | O_NDELAY | O_EXCL;
@@ -42,16 +42,16 @@ int SetupSerial(const char *device, const speed_t baudrate = B9600) {
   cfsetispeed(&tty, baudrate);
 
   /* Setting other Port Stuff */
-  tty.c_cflag &= ~PARENB; // Make 8n1
+  tty.c_cflag &= ~PARENB;  // Make 8n1
   tty.c_cflag &= ~CSTOPB;
   tty.c_cflag &= ~CSIZE;
   tty.c_cflag |= CS8;
 
-  tty.c_cflag &= ~CRTSCTS; // no flow control
+  tty.c_cflag &= ~CRTSCTS;  // no flow control
   // tty.c_cc[VMIN] = 1;            // one character minimum read
-  tty.c_cc[VMIN] = 0;            // no character minimum
-  tty.c_cc[VTIME] = 5;           // 0.5 seconds read timeout
-  tty.c_cflag |= CREAD | CLOCAL; // turn on READ & ignore ctrl lines
+  tty.c_cc[VMIN] = 0;             // no character minimum
+  tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+  tty.c_cflag |= CREAD | CLOCAL;  // turn on READ & ignore ctrl lines
 
   /* Make raw */
   cfmakeraw(&tty);
@@ -99,10 +99,9 @@ class UartController : public IODevice {
     return cnt;
   }
   UartController(const char *const device_name, const speed_t baudrate)
-      : IODevice{rxbuff_, txbuff_}, device_name_{device_name}, baudrate_{
-                                                                   baudrate} {
+      : IODevice{rxbuff_, txbuff_},
+        device_name_{device_name},
+        baudrate_{baudrate} {
     Setup();
   }
 };
-
-

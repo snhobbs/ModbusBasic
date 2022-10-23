@@ -1,16 +1,18 @@
-#include "DemoHeader.h"
 #include <modbus.h>
-#include <string>
-#include <cstdio>
-#include <cerrno>
 #include <unistd.h>
+
 #include <cassert>
+#include <cerrno>
+#include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <string>
 
-int main(int argc, char* argv[]) {
+#include "DemoHeader.h"
+
+int main(int argc, char *argv[]) {
   modbus_t *ctx = nullptr;
-  if(argc < 2) {
+  if (argc < 2) {
     printf("Requires device port as argument, exiting\n");
     return 1;
   }
@@ -26,7 +28,7 @@ int main(int argc, char* argv[]) {
   modbus_mapping_t *mapping = modbus_mapping_new(256, 256, 256, 256);
   mapping->tab_registers[12] = 623;
 
-  //Set the Modbus address of the remote slave
+  // Set the Modbus address of the remote slave
   modbus_set_slave(ctx, 246);
 
   if (modbus_connect(ctx) == -1) {
@@ -36,8 +38,8 @@ int main(int argc, char* argv[]) {
   }
   fprintf(stdout, "Connection Successful\n");
 
-  uint8_t req[MODBUS_RTU_MAX_ADU_LENGTH]{};// request buffer
-  int len = 0;// length of the request/response
+  uint8_t req[MODBUS_RTU_MAX_ADU_LENGTH]{};  // request buffer
+  int len = 0;                               // length of the request/response
 
   printf("\n");
 
@@ -49,7 +51,7 @@ int main(int argc, char* argv[]) {
     if (len == -1) break;
 
     len = modbus_reply(ctx, req, len, mapping);
-    for (std::size_t i=0; i<len; i++){
+    for (std::size_t i = 0; i < len; i++) {
       std::cout << static_cast<int>(req[i]) << ", ";
     }
     std::cout << std::endl;

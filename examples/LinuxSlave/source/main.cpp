@@ -1,13 +1,15 @@
-#include "LinuxSlave.h"
-#include <cstring>
 #include <cassert>
 #include <cstdio>
-int main(int argc, char* argv[]){
+#include <cstring>
+
+#include "LinuxSlave.h"
+int main(int argc, char* argv[]) {
   uint8_t address = 246;
-  if(argc < 2) {
+  if (argc < 2) {
     printf("Requires device port as argument, exiting\n");
     return 1;
-  } if (argc > 2) {
+  }
+  if (argc > 2) {
     address = atoi(argv[2]);
     printf("Address: %d\n", address);
   }
@@ -21,7 +23,7 @@ int main(int argc, char* argv[]){
   std::size_t loops = 0;
 
   fflush(stdout);
-  while(true) {
+  while (true) {
     loops++;
     slave.Run();
     sleep(0.05);

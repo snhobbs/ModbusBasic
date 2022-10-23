@@ -10,25 +10,27 @@
  */
 
 #pragma once
-#include "LinuxModbusTools.h"
 #include <Modbus/../../examples/posix/PosixSerial.h>
-#include <Modbus/Modbus.h>
 #include <Modbus/BitControl.h>
 #include <Modbus/DataStore.h>
+#include <Modbus/Modbus.h>
 #include <Modbus/ModbusRtu/ModbusRtuSlave.h>
 #include <Modbus/RegisterControl.h>
 #include <Utilities/TypeConversion.h>
+#include <sys/time.h>
+
 #include <cassert>
 #include <cstdint>
-#include <sys/time.h>
 #include <vector>
+
+#include "LinuxModbusTools.h"
 
 inline const constexpr std::size_t kCoilCount = 125;
 inline const constexpr std::size_t kRegisterCount = 100;
 using CoilController =
     Modbus::CoilController<Modbus::BitFieldDataStore<kCoilCount>>;
-using HoldingRegisterController =
-  Modbus::HoldingRegisterController<Modbus::RegisterDataStore<kRegisterCount>>;
+using HoldingRegisterController = Modbus::HoldingRegisterController<
+    Modbus::RegisterDataStore<kRegisterCount>>;
 using DiscreteInputController =
     Modbus::DiscreteInputController<Modbus::BitFieldDataStore<kCoilCount>>;
 using InputRegisterController =
@@ -51,7 +53,7 @@ class LinuxSlave : public SlaveBase {
 
  private:
   static const constexpr uint8_t kSlaveAddress = 0x03;
-  const char *const device_name; // = "/tmp/ttyp0";
+  const char *const device_name;  // = "/tmp/ttyp0";
 
   static const constexpr int kBaudRateHz = 9600;
   static const constexpr speed_t kBaudRate = B9600;
@@ -108,8 +110,8 @@ class LinuxSlave : public SlaveBase {
   void CheckForCompletedPacket(const timeval &timestamp) {
     if (PacketIsReady(timestamp)) {
       if ((GetContext().GetState() == Modbus::PacketState::kData)) {
-        //PrintPacketData();
-        const auto& frame = GetFrameIn();
+        // PrintPacketData();
+        const auto &frame = GetFrameIn();
         if (slave_.FrameCrcIsValid(frame)) {
           Modbus::PrintPacketData(frame);
           ProcessPacket();
@@ -134,8 +136,7 @@ class LinuxSlave : public SlaveBase {
     }
   }
   explicit LinuxSlave(const char *const port)
-      : SlaveBase{&crc16, kSlaveAddress,
-                  coils_, hregs_,        dins_,
-                  inregs_},
-        device_name{port}, iodev_{port, kBaudRate} {}
+      : SlaveBase{&crc16, kSlaveAddress, coils_, hregs_, dins_, inregs_},
+        device_name{port},
+        iodev_{port, kBaudRate} {}
 };

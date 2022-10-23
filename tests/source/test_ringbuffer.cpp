@@ -6,15 +6,16 @@
  *      Author: simon
  */
 #if 1
-#include <gtest/gtest.h> 
 #include <RingBuffer/RingBuffer.h>
+#include <gtest/gtest.h>
+
 #include <array>
-#include <string>
 #include <iostream>
+#include <string>
 
 struct RingBufferSetup : public ::testing::Test {
   const std::string chars =
-    "abcbefghijklmnopqrstuvwx1234567890abcbefghijklmnopqrstuvwx1234567890";
+      "abcbefghijklmnopqrstuvwx1234567890abcbefghijklmnopqrstuvwx1234567890";
   static const constexpr std::size_t Size{(1 << 10)};
   static const constexpr std::size_t ksize = 1 << 10;
   std::array<char, ksize> dout{};
@@ -58,12 +59,13 @@ TEST_F(RingBufferSetup, RB_InsertSingle) {
   }
   cnt = 0;
   for (auto d : dout) {
-    EXPECT_EQ(static_cast<std::size_t>(longstr[cnt]), static_cast<std::size_t>(d));
+    EXPECT_EQ(static_cast<std::size_t>(longstr[cnt]),
+              static_cast<std::size_t>(d));
     cnt++;
   }
 }
 
-# if 1
+#if 1
 TEST_F(RingBufferSetup, RB_Peek) {
   std::string longstr;
   fillStr(&longstr, 3 * rb.size());
@@ -74,7 +76,7 @@ TEST_F(RingBufferSetup, RB_Peek) {
 
   for (std::size_t i = 0; i < rb.GetCount(); i++) {
     char out = 0;
-    rb.peek(&out, rb.GetCount()-i);
+    rb.peek(&out, rb.GetCount() - i);
     EXPECT_EQ(out, longstr[i]);
   }
 }
@@ -85,13 +87,13 @@ TEST_F(RingBufferSetup, RB_InsertMulti) {
 
   auto bytes = rb.insert(longstr.data(), longstr.size());
 
-  EXPECT_EQ(bytes, rb.GetCount()); // The amount filled is the amount reported
-  EXPECT_EQ(bytes, rb.size());   // The entire data buffer is filled
+  EXPECT_EQ(bytes, rb.GetCount());  // The amount filled is the amount reported
+  EXPECT_EQ(bytes, rb.size());      // The entire data buffer is filled
 
   for (std::size_t i = 0; i < rb.GetCount(); i++) {
     char out = 0;
     rb.peek(&out, rb.GetCount() - i);
-    EXPECT_EQ(out, longstr[i]); // Each of the values matches
+    EXPECT_EQ(out, longstr[i]);  // Each of the values matches
   }
 }
 
