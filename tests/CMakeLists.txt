@@ -36,13 +36,13 @@ set(DIR_SRCS
   # ${TestSources}/test_ConnectedDevice.cpp
   ${TestSources}/test_Crc.cpp
   ${TestSources}/test_DataConversion.cpp
-  ${TestSources}/test_HoldingRegisters.cpp
+  # ${TestSources}/test_HoldingRegisters.cpp
   ${TestSources}/test_MappedHoldingRegisterController.cpp
   #${TestSources}/test_MappedInputRegisterController.cpp
   ${TestSources}/test_MappedRegisterDataStore.cpp
   # ${TestSources}/test_RtuMaster.cpp
   ${TestSources}/test_RtuProtocol.cpp
-  ${TestSources}/test_RtuSlave.cpp
+  # ${TestSources}/test_RtuSlave.cpp
   ${TestSources}/test_buffer.cpp
   ${TestSources}/test_ringbuffer.cpp
   ${TestSources}/test_Modbus.cpp

@@ -39,6 +39,7 @@
  * How do slaves get enumerated? -> Predetermined addresses
  * */
 
+using size_t = std::size_t;
 namespace Modbus {
 
 const constexpr uint8_t kStatusResponseAddValue =
