@@ -13,11 +13,12 @@
 #ifndef MODBUS_DATASTORE_H_
 #define MODBUS_DATASTORE_H_
 #include <cstdint>
+using size_t = std::size_t;
 
 namespace Modbus {
 class DataStore {
  protected:
-  static const std::size_t kByteSize = 8;
+  static const size_t kByteSize = 8;
   static const size_t kAddressStart = 0x00;
 
  public:
