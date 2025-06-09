@@ -46,14 +46,14 @@ int main(int argc, char* argv[]) {
     loops++;
 
     len = modbus_receive(ctx, req);
-    if (len == -1) break;
+    if (len == -1) continue;
 
     len = modbus_reply(ctx, req, len, mapping);
     for (std::size_t i=0; i<len; i++){
       std::cout << static_cast<int>(req[i]) << ", ";
     }
     std::cout << std::endl;
-    if (len == -1) break;
+    if (len == -1) continue;
 
 #if 0
   if (loops%16 == 0) {

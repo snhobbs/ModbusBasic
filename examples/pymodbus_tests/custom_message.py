@@ -18,9 +18,7 @@ import struct
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.pdu import ModbusRequest, ModbusResponse, ModbusExceptions
-from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from pymodbus.bit_read_message import ReadCoilsRequest
-from pymodbus.compat import int2byte, byte2int
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
@@ -34,7 +32,7 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 # The following is simply a read coil request that always reads 16 coils.
 # Since the function code is already registered with the decoder factory,
-# this will be decoded as a read coil response. If you implement a new 
+# this will be decoded as a read coil response. If you implement a new
 # method that is not currently implemented, you must register the request
 # and response with a ClientDecoder factory.
 # --------------------------------------------------------------------------- #
@@ -47,13 +45,13 @@ class CustomModbusResponse(ModbusResponse):
     def __init__(self, values=None, **kwargs):
         ModbusResponse.__init__(self, **kwargs)
         self.values = values or []
-    
+
     def encode(self):
         """ Encodes response pdu
 
         :returns: The encoded packet message
         """
-        result = int2byte(len(self.values) * 2)
+        result = bytes([len(self.values) * 2])
         for register in self.values:
             result += struct.pack('>H', register)
         return result
@@ -117,6 +115,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
 
 if __name__ == "__main__":
+    from pymodbus.client.sync import ModbusTcpClient as ModbusClient
     with ModbusClient(host='localhost', port=5020) as client:
         client.register(CustomModbusResponse)
         request = CustomModbusRequest(1, unit=1)

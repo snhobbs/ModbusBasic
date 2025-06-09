@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
   while(true) {
     loops++;
     slave.Run();
-    sleep(0.05);
+    //sleep(0.5);
 #if 0
     if (loops%(1<<10) == 0) {
       printf("[");

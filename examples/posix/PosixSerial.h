@@ -64,7 +64,7 @@ int SetupSerial(const char *device, const speed_t baudrate = B9600) {
   return connection;
 }
 
-class UartController : public IODevice {
+class UartController: public IODevice<RingBuffer<uint8_t, 1024>> {
   const char *const device_name_;
   const speed_t baudrate_;
   int connection_ = 0;

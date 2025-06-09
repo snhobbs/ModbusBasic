@@ -8,11 +8,12 @@ twisted library as its backend.  This allows it to scale to many thousands
 of nodes which can be helpful for testing monitoring software.
 """
 # --------------------------------------------------------------------------- #
+import sys
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.server.asynchronous import StartUdpServer
-from pymodbus.server.asynchronous import StartSerialServer
+#from pymodbus.server.asynchronous import StartTcpServer
+#from pymodbus.server.asynchronous import StartUdpServer
+from pymodbus.server import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
@@ -33,7 +34,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
-def run_async_server():
+def run_async_server(port="/dev/ttyUSB0"):
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -146,8 +147,8 @@ def run_async_server():
     # StartUdpServer(context, identity=identity, address=("127.0.0.1", 5020))
 
     # RTU Server
-    StartSerialServer(context, identity=identity,
-                      port='/dev/ttyUSB0', framer=ModbusRtuFramer, baud=9600)
+    StartSerialServer(context=context, identity=identity,
+                      port=port, framer=ModbusRtuFramer, baud=9600)
 
     # ASCII Server
     # StartSerialServer(context, identity=identity,
@@ -159,5 +160,4 @@ def run_async_server():
 
 
 if __name__ == "__main__":
-    run_async_server()
-
+    run_async_server(sys.argv[1] if len(sys.argv)>1 else "/dev/ttyUSB0")
