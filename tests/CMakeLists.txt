@@ -174,4 +174,4 @@ message("System Path" ${CMAKE_SYSTEM_INCLUDE_PATH})
 #  StaticAnalysis("${AnalyseFiles}" "./")
 #endif()
 
-add_test(NAME tests COMMAND ${TargetName})
+add_test(NAME ${TargetName} COMMAND ${TargetName})

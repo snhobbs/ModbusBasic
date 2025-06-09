@@ -4,7 +4,7 @@
 [submodule "examples/pymodbus_tests/pymodbus"]
 	path = examples/pymodbus_tests/pymodbus
 	url = git@github.com:riptideio/pymodbus.git
-[submodule "lib/CppUtilities"]
+[submodule "external/CppUtilities"]
 	path = external/CppUtilities
 	url = git@github.com:snhobbs/CppUtilities
 [submodule "external/googletest"]
