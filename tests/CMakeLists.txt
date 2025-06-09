@@ -1,18 +1,16 @@
 cmake_minimum_required(VERSION 3.10.0)
 
+set(TargetName "modbus_basic_tests")
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-project(Testing)
+project(${TargetName})
 set(ProjectDirectory "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(LibraryDirectory ${ProjectDirectory}/external)
-#SET(CMAKE_CXX_COMPILER clang++-9)
-SET(CMAKE_CXX_COMPILER /usr/bin/g++-9)
 else()
 set(ProjectDirectory "${CMAKE_SOURCE_DIR}")
 endif()
 
 message("\n\nProject directory ${ProjectDirectory}\n\n")
 
-set(TargetName "testing")
 add_executable(${TargetName})
 set(ProjectSource ${ProjectDirectory}/src)
 set(BoardDirectory ${ProjectDirectory}/board)
@@ -23,10 +21,7 @@ message("proj source ${ProjectSource}")
 target_include_directories(${TargetName} PUBLIC "${SourceDirectory}")
 
 message("\n\nTest include directory ${LibraryDirectory}\n\n")
-set(gtest_DIR "${CMAKE_CURRENT_SOURCE_DIR}/googletest/googletest")
-set(gmock_DIR "${CMAKE_CURRENT_SOURCE_DIR}/googletest/googlemock")
-target_include_directories(${TargetName} PUBLIC "${gtest_DIR}/include")
-target_include_directories(${TargetName} PUBLIC "${ProjectDirectory}/lib/CppUtilities/include")
+target_include_directories(${TargetName} PUBLIC "${ProjectDirectory}/external/CppUtilities/include")
 target_include_directories(${TargetName} PUBLIC "${ProjectDirectory}/include")
 
 
